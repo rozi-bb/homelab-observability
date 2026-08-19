@@ -41,7 +41,7 @@ Full details (storage, cooling, existing workload) are in [PRD.md §2](PRD.md#2-
 └───────────────────────────┬──────────────────────────────┘
                              │
                     ┌────────▼────────┐
-                    │     Grafana      │  25 custom panels,
+                    │     Grafana      │  24 custom panels,
                     │      :3033       │  built from scratch
                     └────────┬────────┘
                              │ PromQL
@@ -68,7 +68,7 @@ Full diagram and rationale for each component: [PRD.md §5](PRD.md#5-architectur
 | Phase | Status |
 |---|---|
 | Core metrics (Prometheus, exporters, Grafana) | ✅ Done |
-| Custom dashboard (25 panels, not imported) | ✅ Done |
+| Custom dashboard (24 panels, not imported) | ✅ Done |
 | Downsampling / recording rules | ❌ Not started |
 | Alertmanager → Telegram | 🟡 Prometheus-side alert rules are live and have already caught real incidents; Telegram routing not built yet |
 | Logs (Loki + Promtail) | ❌ Not started |
@@ -112,10 +112,10 @@ Access Grafana at `http://<TAILSCALE_IP>:3033` (log in with the credentials from
 
 ## Dashboard
 
-The `Server Overview` dashboard (25 panels, [grafana/dashboards/overview.json](grafana/dashboards/overview.json)) is grouped into four sections:
+The `Server Overview` dashboard (24 panels, [grafana/dashboards/overview.json](grafana/dashboards/overview.json)) is grouped into four sections:
 
 1. **🌡️ Temperature Overview** — CPU Package & GPU stat cards (Current/Avg/Min/Max), color-coded thresholds, plus a maintenance log for context
-2. **📊 System Resources** — CPU usage, RAM, Load Average (with a threshold line marking the "overload" point), Disk, Network
+2. **📊 System Resources** — CPU usage, RAM (with absolute GB alongside the percentage), Load Average (with a threshold line marking the "overload" point), Disk (with absolute GB alongside the percentage)
 3. **🔥 Thermal & Cooling** — CPU Package vs per-Core temperature (deliberately separated — see technical notes below), GPU temperature, Fan RPM
 4. **🖥️ GPU & Containers** — GPU utilization, running container count, top 10 containers by CPU usage
 
@@ -151,7 +151,7 @@ homelab-observability/
 │   └── docker-status.sh             # custom crash-loop exporter
 ├── systemd/                         # unit files for docker-status.sh
 └── grafana/
-    ├── dashboards/overview.json     # 25 panels, built from scratch
+    ├── dashboards/overview.json     # 24 panels, built from scratch
     └── provisioning/                # datasource & dashboard auto-provisioning
 ```
 

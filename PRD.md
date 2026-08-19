@@ -65,7 +65,7 @@ Relevant context for interpreting temperature trends — the baseline shifts aro
 └───────────────────────────┬───────────────────────────────────┘
                              │
                     ┌────────▼────────┐
-                    │     Grafana      │  :3033 (dashboard, 25 custom panels)
+                    │     Grafana      │  :3033 (dashboard, 24 custom panels)
                     │  512M mem limit  │
                     └────────┬────────┘
                              │ queries
@@ -98,7 +98,7 @@ Loki + Promtail (log aggregation)
 | Service | Image | Port (host, Tailscale-only) | Function | Status |
 |---|---|---|---|---|
 | Prometheus | `prom/prometheus:latest` | `9099` | Time-series DB, scraping, alert rule evaluation | ✅ Running |
-| Grafana | `grafana/grafana:latest` | `3033` | Visual dashboard, 25 custom panels | ✅ Running |
+| Grafana | `grafana/grafana:latest` | `3033` | Visual dashboard, 24 custom panels | ✅ Running |
 | node_exporter | `prom/node-exporter:latest` | `9100` | Host metrics: CPU, RAM, disk, network, temperature, fan, load average | ✅ Running |
 | nvidia_gpu_exporter | `utkuozdemir/nvidia_gpu_exporter:latest` | `9835` | Temperature, utilization, memory of the GTX 1050 GPU | ✅ Running (GPU fan speed **not available** — this laptop GPU doesn't expose that sensor via `nvidia-smi`) |
 | cAdvisor | `gcr.io/cadvisor/cadvisor:latest` | `8081` (moved from default `8080`, which conflicted with another project's dev stack on the same machine) | Per-container Docker metrics | ✅ Running |
@@ -203,7 +203,7 @@ homelab-observability/
 │   └── docker-status.timer          # triggers every 5 seconds
 └── grafana/
     ├── dashboards/
-    │   └── overview.json            # 25 custom panels, built from scratch
+    │   └── overview.json            # 24 custom panels, built from scratch
     └── provisioning/
         ├── datasources/             # Prometheus auto-provisioning
         └── dashboards/              # provider config
@@ -221,7 +221,7 @@ Not yet present (Phase 2/3/4):
 2. **Phase 2 — Downsampling:** ❌ **Not started.** Recording rules for hourly/daily aggregates haven't been created.
 3. **Phase 3 — Alerting:** 🟡 **Partial.** Prometheus alert rules (`ContainerCrashLooping`, etc.) are live and have been validated against real incidents. Alertmanager + Telegram Bot integration hasn't been built.
 4. **Phase 4 — Logs:** ❌ **Not started.** Loki + Promtail aren't part of the stack yet.
-5. **Phase 5 — Custom dashboard & polish:** ✅ **Done** (ahead of schedule — worked on in parallel with Phase 1 due to the need for repeated validation). 25 custom panels, 4 row groups (Temperature Overview, System Resources, Thermal & Cooling, GPU & Containers), every query manually validated against Prometheus, 2 bugs found & fixed (wrong RPM unit, threshold styling not rendering on the graph).
+5. **Phase 5 — Custom dashboard & polish:** ✅ **Done** (ahead of schedule — worked on in parallel with Phase 1 due to the need for repeated validation). 24 custom panels, 4 row groups (Temperature Overview, System Resources, Thermal & Cooling, GPU & Containers), every query manually validated against Prometheus, 2 bugs found & fixed (wrong RPM unit, threshold styling not rendering on the graph).
 6. **Phase 6 — Portfolio documentation:** 🟡 **In progress.** This PRD + README.md.
 
 ## 12. Open Items / User Confirmation Needed
