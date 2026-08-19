@@ -2,7 +2,7 @@
   "title": "Server Overview",
   "uid": "server-overview",
   "schemaVersion": 39,
-  "version": 11,
+  "version": 12,
   "refresh": "5s",
   "time": {
     "from": "now-6h",
@@ -643,8 +643,9 @@
     },
     {
       "id": 3,
-      "title": "Disk Usage - / (%)",
+      "title": "Disk Usage - /",
       "type": "timeseries",
+      "description": "Left axis: disk used as a percentage. Right axis: absolute disk used vs. free space, in GB, on the root (/) partition.",
       "gridPos": {
         "h": 8,
         "w": 12,
@@ -653,8 +654,19 @@
       },
       "targets": [
         {
+          "refId": "A",
           "expr": "100 * (1 - (node_filesystem_avail_bytes{mountpoint=\"/\"} / node_filesystem_size_bytes{mountpoint=\"/\"}))",
           "legendFormat": "Disk used %"
+        },
+        {
+          "refId": "B",
+          "expr": "node_filesystem_size_bytes{mountpoint=\"/\"} - node_filesystem_avail_bytes{mountpoint=\"/\"}",
+          "legendFormat": "Disk used (GB)"
+        },
+        {
+          "refId": "C",
+          "expr": "node_filesystem_avail_bytes{mountpoint=\"/\"}",
+          "legendFormat": "Disk free (GB)"
         }
       ],
       "fieldConfig": {
@@ -670,13 +682,77 @@
             }
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Disk used (GB)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "max",
+                "value": null
+              },
+              {
+                "id": "min",
+                "value": null
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Disk free (GB)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "dash": [
+                    10,
+                    10
+                  ],
+                  "fill": "dash"
+                }
+              },
+              {
+                "id": "max",
+                "value": null
+              },
+              {
+                "id": "min",
+                "value": null
+              }
+            ]
+          }
+        ]
       },
       "options": {
         "legend": {
-          "displayMode": "list",
+          "displayMode": "table",
           "placement": "bottom",
-          "calcs": []
+          "calcs": [
+            "last"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
         }
       }
     },
