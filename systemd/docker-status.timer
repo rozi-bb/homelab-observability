@@ -1,0 +1,10 @@
+[Unit]
+Description=Run docker-status.service every 5s
+
+[Timer]
+OnBootSec=5s
+OnUnitActiveSec=5s
+AccuracySec=1s
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,17 @@
+# Secrets & environment
+.env
+
+# Prometheus/Loki/Grafana persistent data (bind mounts / volumes if used locally)
+prometheus-data/
+loki-data/
+grafana-data/
+alertmanager-data/
+
+# lm-sensors/docker-status textfile collector output (host-local, generated
+# at runtime by node-exporter-textfile/docker-status.sh) — the script itself
+# IS committed, only its generated .prom output is ignored.
+node-exporter-textfile/*.prom
+
+# OS/editor cruft
+.DS_Store
+*.swp

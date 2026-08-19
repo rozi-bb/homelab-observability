@@ -1,0 +1,50 @@
+groups:
+  - name: container-health
+    rules:
+      # Primary crash-loop detection, based on Docker's own RestartCount
+      # (exported via node-exporter-textfile/docker-status.sh, refreshed
+      # every 5s by the docker-status.timer systemd unit). This is a
+      # persistent counter tracked by dockerd itself, so it reliably catches
+      # containers that crash faster than Prometheus' scrape interval —
+      # unlike cAdvisor-based detection, which can miss them entirely if the
+      # container is never "up" at scrape time.
+      - alert: ContainerCrashLooping
+        expr: increase(docker_container_restart_count[15m]) > 2
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Container {{ $labels.name }} is crash-looping"
+          description: >-
+            Container "{{ $labels.name }}" has restarted
+            {{ $value | printf "%.0f" }} times in the last 15 minutes. It is
+            likely stuck in a restart loop — check `docker logs {{ $labels.name }}`.
+
+      - alert: ContainerRestartedRecently
+        expr: increase(docker_container_restart_count[15m]) > 0
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container {{ $labels.name }} restarted"
+          description: >-
+            Container "{{ $labels.name }}" restarted within the last 15
+            minutes. Informational — escalates to critical if it keeps
+            happening (see ContainerCrashLooping).
+
+  - name: self-monitoring
+    rules:
+      # If this goes stale, docker_container_restart_count stops updating
+      # and the two alerts above go blind. node_textfile_mtime_seconds is
+      # emitted automatically by node_exporter's textfile collector.
+      - alert: DockerStatusExporterStale
+        expr: time() - node_textfile_mtime_seconds{file="docker_status.prom"} > 300
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "docker-status.sh textfile export is stale"
+          description: >-
+            docker_status.prom hasn't been refreshed in over 5 minutes.
+            Check `systemctl status docker-status.timer` on the host —
+            container crash-loop alerts are blind until this is fixed.

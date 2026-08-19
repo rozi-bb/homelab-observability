@@ -1,0 +1,9 @@
+[Unit]
+Description=Export Docker container restart count/state for node_exporter textfile collector
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+User=rozi
+ExecStart=/home/rozi/claude-code/homelab-observability/node-exporter-textfile/docker-status.sh
