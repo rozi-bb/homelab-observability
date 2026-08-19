@@ -2,7 +2,7 @@
   "title": "Server Overview",
   "uid": "server-overview",
   "schemaVersion": 39,
-  "version": 9,
+  "version": 10,
   "refresh": "5s",
   "time": {
     "from": "now-6h",
@@ -37,7 +37,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "| Tanggal | Kegiatan |\n|---|---|\n| **13 Agustus 2026** | Ganti thermal paste ke **Arctic MX-6** |\n| **13 Agustus 2026** | Dibersihkan dari debu (kipas & heatsink) |\n| **April 2026** | Servis di ASUS Service Center |\n\nKonteks ini relevan untuk interpretasi tren suhu CPU/GPU di panel bawah \u2014 baseline suhu berubah setelah maintenance ini, jadi data sebelum & sesudah tanggal tersebut tidak apple-to-apple."
+        "content": "| Date | Activity |\n|---|---|\n| **August 13, 2026** | Thermal paste replaced with **Arctic MX-6** |\n| **August 13, 2026** | Dust cleaned out (fans & heatsink) |\n| **April 2026** | Serviced at an ASUS Service Center |\n\nRelevant context for interpreting the CPU/GPU temperature trends in the panels below \u2014 the baseline shifted after this maintenance, so data before & after these dates isn't apples-to-apples."
       }
     },
     {
@@ -89,7 +89,7 @@
         "graphMode": "area",
         "justifyMode": "center"
       },
-      "description": "Suhu Package id 0 saat ini juga (real-time, bukan histori)."
+      "description": "Package id 0 temperature right now (real-time, not historical)."
     },
     {
       "id": 10,
@@ -140,7 +140,7 @@
         "graphMode": "area",
         "justifyMode": "center"
       },
-      "description": "Rata-rata suhu sensor 'Package id 0' (bukan average antar-core) selama time range dashboard. Ini angka yang dipakai BIOS/OS buat keputusan thermal throttling."
+      "description": "Average temperature of the 'Package id 0' sensor (not an average across cores) over the dashboard's time range. This is the value the BIOS/OS uses for thermal throttling decisions."
     },
     {
       "id": 11,
@@ -170,7 +170,7 @@
         "graphMode": "area",
         "justifyMode": "center"
       },
-      "description": "Suhu Package terendah yang tercatat selama time range dashboard."
+      "description": "Lowest Package temperature recorded over the dashboard's time range."
     },
     {
       "id": 12,
@@ -221,7 +221,7 @@
         "graphMode": "area",
         "justifyMode": "center"
       },
-      "description": "Suhu Package tertinggi yang tercatat selama time range dashboard."
+      "description": "Highest Package temperature recorded over the dashboard's time range."
     },
     {
       "id": 20,
@@ -272,7 +272,7 @@
         "graphMode": "area",
         "justifyMode": "center"
       },
-      "description": "Suhu GPU saat ini juga (real-time, bukan histori)."
+      "description": "GPU temperature right now (real-time, not historical)."
     },
     {
       "id": 13,
@@ -323,7 +323,7 @@
         "graphMode": "area",
         "justifyMode": "center"
       },
-      "description": "Rata-rata suhu GPU selama time range dashboard (bukan snapshot detik ini)."
+      "description": "Average GPU temperature over the dashboard's time range (not an instant snapshot)."
     },
     {
       "id": 14,
@@ -353,7 +353,7 @@
         "graphMode": "area",
         "justifyMode": "center"
       },
-      "description": "Suhu GPU terendah yang tercatat selama time range dashboard."
+      "description": "Lowest GPU temperature recorded over the dashboard's time range."
     },
     {
       "id": 15,
@@ -404,7 +404,7 @@
         "graphMode": "area",
         "justifyMode": "center"
       },
-      "description": "Suhu GPU tertinggi yang tercatat selama time range dashboard."
+      "description": "Highest GPU temperature recorded over the dashboard's time range."
     },
     {
       "id": 200,
@@ -500,7 +500,7 @@
       "id": 21,
       "title": "Load Average",
       "type": "timeseries",
-      "description": "Antrian proses nunggu resource (CPU/disk/network), BUKAN persentase CPU. Mesin ini punya 12 logical thread \u2014 garis merah putus-putus di angka 12 nandain titik 'penuh, mulai ngantri'.",
+      "description": "Number of processes queued waiting for resources (CPU/disk/network), NOT a CPU percentage. This machine has 12 logical threads \u2014 the dashed red line at 12 marks the point where it's 'full' and processes start queuing.",
       "gridPos": {
         "h": 8,
         "w": 12,
@@ -510,15 +510,15 @@
       "targets": [
         {
           "expr": "node_load1",
-          "legendFormat": "1 menit"
+          "legendFormat": "1 min"
         },
         {
           "expr": "node_load5",
-          "legendFormat": "5 menit"
+          "legendFormat": "5 min"
         },
         {
           "expr": "node_load15",
-          "legendFormat": "15 menit"
+          "legendFormat": "15 min"
         }
       ],
       "fieldConfig": {
@@ -664,7 +664,7 @@
       "id": 4,
       "title": "CPU Package Temp (\u00b0C)",
       "type": "timeseries",
-      "description": "Sensor 'Package id 0' doang \u2014 sensor tunggal terpisah dari 6 core, ini yang dipakai BIOS/OS buat thermal throttling.",
+      "description": "The 'Package id 0' sensor only \u2014 a separate physical sensor from the 6 cores, and the one used by the BIOS/OS for thermal throttling.",
       "gridPos": {
         "h": 8,
         "w": 8,
@@ -710,7 +710,7 @@
       "id": 18,
       "title": "CPU Per-Core Temp (\u00b0C)",
       "type": "timeseries",
-      "description": "6 sensor core individual (Core 0-5) \u2014 terpisah dari Package. Berguna buat lihat core mana yang paling panas.",
+      "description": "6 individual core sensors (Core 0-5) \u2014 separate from Package. Useful for seeing which specific core is running hottest.",
       "gridPos": {
         "h": 8,
         "w": 8,
