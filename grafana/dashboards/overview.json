@@ -2,7 +2,7 @@
   "title": "Server Overview",
   "uid": "server-overview",
   "schemaVersion": 42,
-  "version": 60,
+  "version": 64,
   "refresh": "5s",
   "time": {
     "from": "now-6h",
@@ -15,7 +15,7 @@
   "panels": [
     {
       "gridPos": {
-        "h": 3,
+        "h": 7,
         "w": 24,
         "x": 0,
         "y": 0
@@ -41,9 +41,9 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 3
+        "y": 7
       },
-      "id": 500,
+      "id": 23,
       "title": "\ud83d\udda5\ufe0f CPU",
       "type": "row"
     },
@@ -79,7 +79,7 @@
         "h": 6,
         "w": 6,
         "x": 0,
-        "y": 4
+        "y": 8
       },
       "id": 19,
       "options": {
@@ -143,7 +143,7 @@
         "h": 6,
         "w": 6,
         "x": 6,
-        "y": 4
+        "y": 8
       },
       "id": 10,
       "options": {
@@ -199,7 +199,7 @@
         "h": 6,
         "w": 6,
         "x": 12,
-        "y": 4
+        "y": 8
       },
       "id": 11,
       "options": {
@@ -263,7 +263,7 @@
         "h": 6,
         "w": 6,
         "x": 18,
-        "y": 4
+        "y": 8
       },
       "id": 12,
       "options": {
@@ -294,209 +294,6 @@
       ],
       "title": "CPU Package Temp - Max",
       "type": "stat"
-    },
-    {
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "showValues": false,
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "max": 100,
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "percent"
-        }
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 10
-      },
-      "id": 1,
-      "options": {
-        "annotations": {
-          "clustering": -1,
-          "multiLane": false
-        },
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "enableFacetedFilter": false,
-          "overflow": "ellipsis",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "13.1.3",
-      "targets": [
-        {
-          "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\", instance=\"100.77.191.60:9100\"}[5m])) * 100)",
-          "legendFormat": "CPU busy %",
-          "refId": "A"
-        }
-      ],
-      "title": "CPU Usage (%)",
-      "type": "timeseries"
-    },
-    {
-      "description": "Number of processes queued waiting for resources (CPU/disk/network), NOT a CPU percentage. This machine has 12 logical threads \u2014 the dashed red line at 12 marks the point where it's 'full' and processes start queuing.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "showValues": false,
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "line"
-            }
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "red",
-                "value": 12
-              }
-            ]
-          },
-          "unit": "short"
-        }
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 10
-      },
-      "id": 21,
-      "options": {
-        "annotations": {
-          "clustering": -1,
-          "multiLane": false
-        },
-        "legend": {
-          "calcs": [
-            "min",
-            "max",
-            "last"
-          ],
-          "displayMode": "table",
-          "enableFacetedFilter": false,
-          "overflow": "ellipsis",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "13.1.3",
-      "targets": [
-        {
-          "expr": "node_load1{instance=\"100.77.191.60:9100\"}",
-          "legendFormat": "1 min",
-          "refId": "A"
-        },
-        {
-          "expr": "node_load5{instance=\"100.77.191.60:9100\"}",
-          "legendFormat": "5 min",
-          "refId": "B"
-        },
-        {
-          "expr": "node_load15{instance=\"100.77.191.60:9100\"}",
-          "legendFormat": "15 min",
-          "refId": "C"
-        }
-      ],
-      "title": "Load Average",
-      "type": "timeseries"
     },
     {
       "description": "The 'Package id 0' sensor only \u2014 a separate physical sensor from the 6 cores, and the one used by the BIOS/OS for thermal throttling.",
@@ -559,7 +356,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 18
+        "y": 14
       },
       "id": 4,
       "options": {
@@ -658,7 +455,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 18
+        "y": 14
       },
       "id": 18,
       "options": {
@@ -758,6 +555,102 @@
               "mode": "none"
             },
             "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 22
+      },
+      "id": 1,
+      "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "enableFacetedFilter": false,
+          "overflow": "ellipsis",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.1.3",
+      "targets": [
+        {
+          "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\", instance=\"100.77.191.60:9100\"}[5m])) * 100)",
+          "legendFormat": "CPU busy %",
+          "refId": "A"
+        }
+      ],
+      "title": "CPU Usage (%)",
+      "type": "timeseries"
+    },
+    {
+      "description": "Number of processes queued waiting for resources (CPU/disk/network), NOT a CPU percentage. This machine has 12 logical threads \u2014 the dashed red line at 12 marks the point where it's 'full' and processes start queuing.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
               "mode": "line"
             }
           },
@@ -769,16 +662,116 @@
                 "value": 0
               },
               {
-                "color": "yellow",
-                "value": 5000
-              },
+                "color": "red",
+                "value": 12
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 22
+      },
+      "id": 21,
+      "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "last"
+          ],
+          "displayMode": "table",
+          "enableFacetedFilter": false,
+          "overflow": "ellipsis",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.1.3",
+      "targets": [
+        {
+          "expr": "node_load1{instance=\"100.77.191.60:9100\"}",
+          "legendFormat": "1 min",
+          "refId": "A"
+        },
+        {
+          "expr": "node_load5{instance=\"100.77.191.60:9100\"}",
+          "legendFormat": "5 min",
+          "refId": "B"
+        },
+        {
+          "expr": "node_load15{instance=\"100.77.191.60:9100\"}",
+          "legendFormat": "15 min",
+          "refId": "C"
+        }
+      ],
+      "title": "Load Average",
+      "type": "timeseries"
+    },
+    {
+      "description": "CPU fan RPM (sensor 'fan1' on the ASUS embedded controller, asus-isa-0000 \u2014 not from nvidia-smi).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
               {
-                "color": "orange",
-                "value": 6000
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
-                "value": 6500
+                "value": 5300
               }
             ]
           },
@@ -789,7 +782,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 26
+        "y": 30
       },
       "id": 16,
       "options": {
@@ -819,8 +812,8 @@
       "pluginVersion": "13.1.3",
       "targets": [
         {
-          "expr": "node_hwmon_fan_rpm{chip=~\".*\", instance=\"100.77.191.60:9100\"}",
-          "legendFormat": "{{chip}} {{sensor}}",
+          "expr": "node_hwmon_fan_rpm{chip=~\"asus.*\", sensor=\"fan1\", instance=\"100.77.191.60:9100\"}",
+          "legendFormat": "CPU fan",
           "refId": "A"
         }
       ],
@@ -833,9 +826,9 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 34
+        "y": 38
       },
-      "id": 501,
+      "id": 24,
       "title": "\ud83c\udfae GPU",
       "type": "row"
     },
@@ -871,7 +864,7 @@
         "h": 6,
         "w": 6,
         "x": 0,
-        "y": 35
+        "y": 39
       },
       "id": 20,
       "options": {
@@ -935,7 +928,7 @@
         "h": 6,
         "w": 6,
         "x": 6,
-        "y": 35
+        "y": 39
       },
       "id": 13,
       "options": {
@@ -991,7 +984,7 @@
         "h": 6,
         "w": 6,
         "x": 12,
-        "y": 35
+        "y": 39
       },
       "id": 14,
       "options": {
@@ -1055,7 +1048,7 @@
         "h": 6,
         "w": 6,
         "x": 18,
-        "y": 35
+        "y": 39
       },
       "id": 15,
       "options": {
@@ -1147,7 +1140,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 41
+        "y": 45
       },
       "id": 5,
       "options": {
@@ -1247,7 +1240,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 41
+        "y": 45
       },
       "id": 6,
       "options": {
@@ -1281,14 +1274,77 @@
       "type": "timeseries"
     },
     {
+      "description": "GPU fan RPM (sensor 'fan2' on the ASUS embedded controller, asus-isa-0000 \u2014 not from nvidia-smi, which doesn't expose this on this GPU).",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 4800
+              }
+            ]
+          },
+          "unit": "rotrpm"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 53
+      },
+      "id": 27,
+      "options": {
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "mean",
+            "last"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "expr": "node_hwmon_fan_rpm{chip=~\"asus.*\", sensor=\"fan2\", instance=\"100.77.191.60:9100\"}",
+          "legendFormat": "GPU fan",
+          "refId": "A"
+        }
+      ],
+      "title": "GPU Fan RPM",
+      "type": "timeseries"
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 49
+        "y": 61
       },
-      "id": 502,
+      "id": 25,
       "title": "\ud83d\udcca System & Storage",
       "type": "row"
     },
@@ -1415,7 +1471,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 50
+        "y": 62
       },
       "id": 2,
       "options": {
@@ -1583,7 +1639,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 50
+        "y": 62
       },
       "id": 3,
       "options": {
@@ -1634,9 +1690,9 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 58
+        "y": 70
       },
-      "id": 503,
+      "id": 26,
       "title": "\ud83d\udc33 Containers",
       "type": "row"
     },
@@ -1667,7 +1723,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 59
+        "y": 71
       },
       "id": 8,
       "options": {
@@ -1758,7 +1814,7 @@
         "h": 8,
         "w": 16,
         "x": 8,
-        "y": 59
+        "y": 71
       },
       "id": 9,
       "options": {
