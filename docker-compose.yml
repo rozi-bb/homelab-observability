@@ -27,6 +27,16 @@ services:
     container_name: obs-node-exporter
     restart: unless-stopped
     pid: host
+    # network_mode: host is required (not optional) for accurate network
+    # metrics: /proc/net/dev reflects the *reading process's own* network
+    # namespace, not an arbitrary mounted /proc tree — so under normal
+    # bridge networking node_exporter only ever sees its own virtual eth0
+    # into the Docker bridge, never the host's real wlo1/tailscale0. This
+    # was discovered when "Network Throughput" in Grafana showed suspiciously
+    # tiny numbers that turned out to be Prometheus's own scrape traffic.
+    # Since ports: is ignored under host networking, --web.listen-address
+    # below does the job of keeping this bound to the Tailscale IP only.
+    network_mode: host
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
@@ -38,15 +48,12 @@ services:
       - "--path.rootfs=/rootfs"
       - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
       - "--collector.textfile.directory=/textfile_collector"
-    ports:
-      - "${TAILSCALE_IP}:9100:9100"
+      - "--web.listen-address=${TAILSCALE_IP}:9100"
     deploy:
       resources:
         limits:
           cpus: "0.3"
           memory: 128M
-    networks:
-      - observability
 
   nvidia_gpu_exporter:
     image: utkuozdemir/nvidia_gpu_exporter:latest

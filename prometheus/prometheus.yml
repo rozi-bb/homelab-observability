@@ -13,8 +13,14 @@ scrape_configs:
       - targets: ["localhost:9090"]
 
   - job_name: "node_exporter"
+    # node_exporter runs with network_mode: host (required for accurate
+    # network-interface metrics — see docker-compose.yml), so it's off the
+    # "observability" Docker network and can't be reached by container name.
+    # Reachable via the host's Tailscale IP instead, since --web.listen-address
+    # is explicitly bound there. Replace with your own tailnet IP if you fork
+    # this repo — this one file can't read from .env like docker-compose.yml can.
     static_configs:
-      - targets: ["node_exporter:9100"]
+      - targets: ["100.77.191.60:9100"]
 
   - job_name: "nvidia_gpu_exporter"
     static_configs:
