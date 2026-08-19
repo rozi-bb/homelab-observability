@@ -1,12 +1,12 @@
 {
   "title": "Server Overview",
   "uid": "server-overview",
-  "schemaVersion": 39,
-  "version": 14,
+  "schemaVersion": 42,
+  "version": 53,
   "refresh": "5s",
   "time": {
-    "from": "now-6h",
-    "to": "now"
+    "from": "2026-08-19T07:05:09.459Z",
+    "to": "2026-08-19T07:17:34.225Z"
   },
   "tags": [
     "homelab-observability",
@@ -14,58 +14,113 @@
   ],
   "panels": [
     {
-      "id": 100,
-      "title": "\ud83c\udf21\ufe0f TEMPERATURE OVERVIEW",
-      "type": "row",
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
         "y": 0
       },
-      "collapsed": false
+      "id": 23,
+      "title": "\ud83c\udf21\ufe0f TEMPERATURE OVERVIEW",
+      "type": "row"
     },
     {
-      "id": 22,
-      "title": "\ud83d\udee0\ufe0f Maintenance Log",
-      "type": "text",
       "gridPos": {
-        "h": 3,
+        "h": 7,
         "w": 24,
         "x": 0,
         "y": 1
       },
+      "id": 22,
       "options": {
-        "mode": "markdown",
-        "content": "| Date | Activity |\n|---|---|\n| **August 13, 2026** | Thermal paste replaced with **Arctic MX-6** |\n| **August 13, 2026** | Dust cleaned out (fans & heatsink) |\n| **April 2026** | Serviced at an ASUS Service Center |\n\nRelevant context for interpreting the CPU/GPU temperature trends in the panels below \u2014 the baseline shifted after this maintenance, so data before & after these dates isn't apples-to-apples."
-      }
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "| Date | Activity |\n|---|---|\n| **August 13, 2026** | Thermal paste replaced with **Arctic MX-6** |\n| **August 13, 2026** | Dust cleaned out (fans & heatsink) |\n| **April 2026** | Serviced at an ASUS Service Center |\n\nRelevant context for interpreting the CPU/GPU temperature trends in the panels below \u2014 the baseline shifted after this maintenance, so data before & after these dates isn't apples-to-apples.",
+        "mode": "markdown"
+      },
+      "pluginVersion": "13.1.3",
+      "targets": [],
+      "title": "\ud83d\udee0\ufe0f Maintenance Log",
+      "type": "text"
     },
     {
-      "id": 19,
-      "title": "CPU Package Temp - Current",
-      "type": "stat",
+      "description": "Package id 0 temperature right now (real-time, not historical).",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 70
+              },
+              {
+                "color": "orange",
+                "value": 80
+              },
+              {
+                "color": "red",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "celsius"
+        }
+      },
       "gridPos": {
         "h": 6,
         "w": 6,
         "x": 0,
-        "y": 4
+        "y": 8
       },
+      "id": 19,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.1.3",
       "targets": [
         {
           "expr": "node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp1\", instance=\"100.77.191.60:9100\"}",
+          "instant": true,
           "legendFormat": "current",
-          "instant": true
+          "refId": "A"
         }
       ],
+      "title": "CPU Package Temp - Current",
+      "type": "stat"
+    },
+    {
+      "description": "Average temperature of the 'Package id 0' sensor (not an average across cores) over the dashboard's time range. This is the value the BIOS/OS uses for thermal throttling decisions.",
       "fieldConfig": {
         "defaults": {
-          "unit": "celsius",
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "yellow",
@@ -80,124 +135,112 @@
                 "value": 90
               }
             ]
-          }
-        },
-        "overrides": []
+          },
+          "unit": "celsius"
+        }
       },
-      "options": {
-        "colorMode": "background",
-        "graphMode": "area",
-        "justifyMode": "center"
-      },
-      "description": "Package id 0 temperature right now (real-time, not historical)."
-    },
-    {
-      "id": 10,
-      "title": "CPU Package Temp - Avg",
-      "type": "stat",
       "gridPos": {
         "h": 6,
         "w": 6,
         "x": 6,
-        "y": 4
+        "y": 8
       },
+      "id": 10,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.1.3",
       "targets": [
         {
           "expr": "avg(avg_over_time(node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp1\"}[$__range]))",
+          "instant": true,
           "legendFormat": "avg",
-          "instant": true
+          "refId": "A"
         }
       ],
+      "title": "CPU Package Temp - Avg",
+      "type": "stat"
+    },
+    {
+      "description": "Lowest Package temperature recorded over the dashboard's time range.",
       "fieldConfig": {
         "defaults": {
-          "unit": "celsius",
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 70
-              },
-              {
-                "color": "orange",
-                "value": 80
+                "value": 0
               },
               {
                 "color": "red",
-                "value": 90
+                "value": 80
               }
             ]
-          }
-        },
-        "overrides": []
+          },
+          "unit": "celsius"
+        }
       },
-      "options": {
-        "colorMode": "background",
-        "graphMode": "area",
-        "justifyMode": "center"
-      },
-      "description": "Average temperature of the 'Package id 0' sensor (not an average across cores) over the dashboard's time range. This is the value the BIOS/OS uses for thermal throttling decisions."
-    },
-    {
-      "id": 11,
-      "title": "CPU Package Temp - Min",
-      "type": "stat",
       "gridPos": {
         "h": 6,
         "w": 6,
         "x": 12,
-        "y": 4
+        "y": 8
       },
-      "targets": [
-        {
-          "expr": "min(min_over_time(node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp1\"}[$__range]))",
-          "legendFormat": "min",
-          "instant": true
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "celsius"
-        },
-        "overrides": []
-      },
+      "id": 11,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
-        "justifyMode": "center"
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "description": "Lowest Package temperature recorded over the dashboard's time range."
-    },
-    {
-      "id": 12,
-      "title": "CPU Package Temp - Max",
-      "type": "stat",
-      "gridPos": {
-        "h": 6,
-        "w": 6,
-        "x": 18,
-        "y": 4
-      },
+      "pluginVersion": "13.1.3",
       "targets": [
         {
-          "expr": "max(max_over_time(node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp1\"}[$__range]))",
-          "legendFormat": "max",
-          "instant": true
+          "expr": "min(min_over_time(node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp1\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "min",
+          "refId": "A"
         }
       ],
+      "title": "CPU Package Temp - Min",
+      "type": "stat"
+    },
+    {
+      "description": "Highest Package temperature recorded over the dashboard's time range.",
       "fieldConfig": {
         "defaults": {
-          "unit": "celsius",
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "yellow",
@@ -212,175 +255,463 @@
                 "value": 95
               }
             ]
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "colorMode": "background",
-        "graphMode": "area",
-        "justifyMode": "center"
-      },
-      "description": "Highest Package temperature recorded over the dashboard's time range."
-    },
-    {
-      "id": 20,
-      "title": "GPU Temp - Current",
-      "type": "stat",
-      "gridPos": {
-        "h": 6,
-        "w": 6,
-        "x": 0,
-        "y": 10
-      },
-      "targets": [
-        {
-          "expr": "nvidia_smi_temperature_gpu",
-          "legendFormat": "current",
-          "instant": true
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "celsius",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 65
-              },
-              {
-                "color": "orange",
-                "value": 75
-              },
-              {
-                "color": "red",
-                "value": 85
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "colorMode": "background",
-        "graphMode": "area",
-        "justifyMode": "center"
-      },
-      "description": "GPU temperature right now (real-time, not historical)."
-    },
-    {
-      "id": 13,
-      "title": "GPU Temp - Avg",
-      "type": "stat",
-      "gridPos": {
-        "h": 6,
-        "w": 6,
-        "x": 6,
-        "y": 10
-      },
-      "targets": [
-        {
-          "expr": "avg(avg_over_time(nvidia_smi_temperature_gpu[$__range]))",
-          "legendFormat": "avg",
-          "instant": true
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "celsius",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 65
-              },
-              {
-                "color": "orange",
-                "value": 75
-              },
-              {
-                "color": "red",
-                "value": 85
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "colorMode": "background",
-        "graphMode": "area",
-        "justifyMode": "center"
-      },
-      "description": "Average GPU temperature over the dashboard's time range (not an instant snapshot)."
-    },
-    {
-      "id": 14,
-      "title": "GPU Temp - Min",
-      "type": "stat",
-      "gridPos": {
-        "h": 6,
-        "w": 6,
-        "x": 12,
-        "y": 10
-      },
-      "targets": [
-        {
-          "expr": "min(min_over_time(nvidia_smi_temperature_gpu[$__range]))",
-          "legendFormat": "min",
-          "instant": true
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
+          },
           "unit": "celsius"
-        },
-        "overrides": []
+        }
       },
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center"
-      },
-      "description": "Lowest GPU temperature recorded over the dashboard's time range."
-    },
-    {
-      "id": 15,
-      "title": "GPU Temp - Max",
-      "type": "stat",
       "gridPos": {
         "h": 6,
         "w": 6,
         "x": 18,
-        "y": 10
+        "y": 8
       },
+      "id": 12,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.1.3",
       "targets": [
         {
-          "expr": "max(max_over_time(nvidia_smi_temperature_gpu[$__range]))",
+          "expr": "max(max_over_time(node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp1\"}[$__range]))",
+          "instant": true,
           "legendFormat": "max",
-          "instant": true
+          "refId": "A"
         }
       ],
+      "title": "CPU Package Temp - Max",
+      "type": "stat"
+    },
+    {
+      "description": "The 'Package id 0' sensor only \u2014 a separate physical sensor from the 6 cores, and the one used by the BIOS/OS for thermal throttling.",
       "fieldConfig": {
         "defaults": {
-          "unit": "celsius",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "celsius"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 14
+      },
+      "id": 4,
+      "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "mean",
+            "last"
+          ],
+          "displayMode": "table",
+          "enableFacetedFilter": false,
+          "overflow": "ellipsis",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.1.3",
+      "targets": [
+        {
+          "expr": "node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp1\", instance=\"100.77.191.60:9100\"}",
+          "legendFormat": "Package id 0",
+          "refId": "A"
+        }
+      ],
+      "title": "CPU Package Temp (\u00b0C)",
+      "type": "timeseries"
+    },
+    {
+      "description": "6 individual core sensors (Core 0-5) \u2014 separate from Package. Useful for seeing which specific core is running hottest.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "celsius"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 14
+      },
+      "id": 18,
+      "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "mean",
+            "last"
+          ],
+          "displayMode": "table",
+          "enableFacetedFilter": false,
+          "overflow": "ellipsis",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.1.3",
+      "targets": [
+        {
+          "expr": "node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp2\", instance=\"100.77.191.60:9100\"}",
+          "legendFormat": "Core 0",
+          "refId": "A"
+        },
+        {
+          "expr": "node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp3\", instance=\"100.77.191.60:9100\"}",
+          "legendFormat": "Core 1",
+          "refId": "B"
+        },
+        {
+          "expr": "node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp4\", instance=\"100.77.191.60:9100\"}",
+          "legendFormat": "Core 2",
+          "refId": "C"
+        },
+        {
+          "expr": "node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp5\", instance=\"100.77.191.60:9100\"}",
+          "legendFormat": "Core 3",
+          "refId": "D"
+        },
+        {
+          "expr": "node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp6\", instance=\"100.77.191.60:9100\"}",
+          "legendFormat": "Core 4",
+          "refId": "E"
+        },
+        {
+          "expr": "node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp7\", instance=\"100.77.191.60:9100\"}",
+          "legendFormat": "Core 5",
+          "refId": "F"
+        }
+      ],
+      "title": "CPU Per-Core Temp (\u00b0C)",
+      "type": "timeseries"
+    },
+    {
+      "description": "GPU temperature right now (real-time, not historical).",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 65
+              },
+              {
+                "color": "orange",
+                "value": 75
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          },
+          "unit": "celsius"
+        }
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 22
+      },
+      "id": 20,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.1.3",
+      "targets": [
+        {
+          "expr": "nvidia_smi_temperature_gpu",
+          "instant": true,
+          "legendFormat": "current",
+          "refId": "A"
+        }
+      ],
+      "title": "GPU Temp - Current",
+      "type": "stat"
+    },
+    {
+      "description": "Average GPU temperature over the dashboard's time range (not an instant snapshot).",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 65
+              },
+              {
+                "color": "orange",
+                "value": 75
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          },
+          "unit": "celsius"
+        }
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 22
+      },
+      "id": 13,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.1.3",
+      "targets": [
+        {
+          "expr": "avg(avg_over_time(nvidia_smi_temperature_gpu[$__range]))",
+          "instant": true,
+          "legendFormat": "avg",
+          "refId": "A"
+        }
+      ],
+      "title": "GPU Temp - Avg",
+      "type": "stat"
+    },
+    {
+      "description": "Lowest GPU temperature recorded over the dashboard's time range.",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "celsius"
+        }
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 22
+      },
+      "id": 14,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.1.3",
+      "targets": [
+        {
+          "expr": "min(min_over_time(nvidia_smi_temperature_gpu[$__range]))",
+          "instant": true,
+          "legendFormat": "min",
+          "refId": "A"
+        }
+      ],
+      "title": "GPU Temp - Min",
+      "type": "stat"
+    },
+    {
+      "description": "Highest GPU temperature recorded over the dashboard's time range.",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
               },
               {
                 "color": "yellow",
@@ -395,108 +726,414 @@
                 "value": 90
               }
             ]
-          }
-        },
-        "overrides": []
+          },
+          "unit": "celsius"
+        }
       },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 22
+      },
+      "id": 15,
       "options": {
         "colorMode": "background",
         "graphMode": "area",
-        "justifyMode": "center"
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "description": "Highest GPU temperature recorded over the dashboard's time range."
+      "pluginVersion": "13.1.3",
+      "targets": [
+        {
+          "expr": "max(max_over_time(nvidia_smi_temperature_gpu[$__range]))",
+          "instant": true,
+          "legendFormat": "max",
+          "refId": "A"
+        }
+      ],
+      "title": "GPU Temp - Max",
+      "type": "stat"
     },
     {
-      "id": 200,
-      "title": "\ud83d\udcca SYSTEM RESOURCES",
-      "type": "row",
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 16
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "celsius"
+        }
       },
-      "collapsed": false
-    },
-    {
-      "id": 1,
-      "title": "CPU Usage (%)",
-      "type": "timeseries",
       "gridPos": {
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 17
+        "y": 28
       },
+      "id": 5,
+      "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "mean",
+            "last"
+          ],
+          "displayMode": "table",
+          "enableFacetedFilter": false,
+          "overflow": "ellipsis",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.1.3",
       "targets": [
         {
-          "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\", instance=\"100.77.191.60:9100\"}[5m])) * 100)",
-          "legendFormat": "CPU busy %"
+          "expr": "nvidia_smi_temperature_gpu",
+          "legendFormat": "GPU temp",
+          "refId": "A"
         }
       ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "percent",
-          "max": 100,
-          "min": 0,
-          "custom": {
-            "hideFrom": {
-              "tooltip": false,
-              "viz": false,
-              "legend": false
-            }
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "calcs": []
-        }
-      }
+      "title": "GPU Temp (\u00b0C)",
+      "type": "timeseries"
     },
     {
-      "id": 2,
-      "title": "RAM Usage",
-      "type": "timeseries",
-      "description": "Left axis: RAM used as a percentage. Right axis: absolute RAM used vs. total, in GB.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 5000
+              },
+              {
+                "color": "orange",
+                "value": 6000
+              },
+              {
+                "color": "red",
+                "value": 6500
+              }
+            ]
+          },
+          "unit": "rotrpm"
+        }
+      },
       "gridPos": {
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 17
+        "y": 28
       },
+      "id": 16,
+      "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "mean",
+            "last"
+          ],
+          "displayMode": "table",
+          "enableFacetedFilter": false,
+          "overflow": "ellipsis",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.1.3",
       "targets": [
         {
-          "refId": "A",
-          "expr": "100 * (1 - (node_memory_MemAvailable_bytes{instance=\"100.77.191.60:9100\"} / node_memory_MemTotal_bytes{instance=\"100.77.191.60:9100\"}))",
-          "legendFormat": "RAM used %"
-        },
-        {
-          "refId": "B",
-          "expr": "node_memory_MemTotal_bytes{instance=\"100.77.191.60:9100\"} - node_memory_MemAvailable_bytes{instance=\"100.77.191.60:9100\"}",
-          "legendFormat": "RAM used (GB)"
-        },
-        {
-          "refId": "C",
-          "expr": "node_memory_MemTotal_bytes{instance=\"100.77.191.60:9100\"}",
-          "legendFormat": "RAM total (GB)"
+          "expr": "node_hwmon_fan_rpm{chip=~\".*\", instance=\"100.77.191.60:9100\"}",
+          "legendFormat": "{{chip}} {{sensor}}",
+          "refId": "A"
         }
       ],
+      "title": "CPU Fan RPM",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 25,
+      "title": "\ud83d\udcca SYSTEM RESOURCES",
+      "type": "row"
+    },
+    {
       "fieldConfig": {
         "defaults": {
-          "unit": "percent",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
           "max": 100,
           "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 1
+      },
+      "id": 1,
+      "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "enableFacetedFilter": false,
+          "overflow": "ellipsis",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.1.3",
+      "targets": [
+        {
+          "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\", instance=\"100.77.191.60:9100\"}[5m])) * 100)",
+          "legendFormat": "CPU busy %",
+          "refId": "A"
+        }
+      ],
+      "title": "CPU Usage (%)",
+      "type": "timeseries"
+    },
+    {
+      "description": "Left axis: RAM used as a percentage. Right axis: absolute RAM used vs. total, in GB.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
             "hideFrom": {
+              "legend": false,
               "tooltip": false,
-              "viz": false,
-              "legend": false
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
             }
-          }
+          },
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
         },
         "overrides": [
           {
@@ -559,52 +1196,91 @@
           }
         ]
       },
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom",
-          "calcs": [
-            "last"
-          ]
-        },
-        "tooltip": {
-          "mode": "multi"
-        }
-      }
-    },
-    {
-      "id": 21,
-      "title": "Load Average",
-      "type": "timeseries",
-      "description": "Number of processes queued waiting for resources (CPU/disk/network), NOT a CPU percentage. This machine has 12 logical threads \u2014 the dashed red line at 12 marks the point where it's 'full' and processes start queuing.",
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 0,
-        "y": 25
+        "x": 12,
+        "y": 1
       },
+      "id": 2,
+      "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
+        "legend": {
+          "calcs": [
+            "last"
+          ],
+          "displayMode": "table",
+          "enableFacetedFilter": false,
+          "overflow": "ellipsis",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.1.3",
       "targets": [
         {
-          "expr": "node_load1{instance=\"100.77.191.60:9100\"}",
-          "legendFormat": "1 min"
+          "expr": "100 * (1 - (node_memory_MemAvailable_bytes{instance=\"100.77.191.60:9100\"} / node_memory_MemTotal_bytes{instance=\"100.77.191.60:9100\"}))",
+          "legendFormat": "RAM used %",
+          "refId": "A"
         },
         {
-          "expr": "node_load5{instance=\"100.77.191.60:9100\"}",
-          "legendFormat": "5 min"
+          "expr": "node_memory_MemTotal_bytes{instance=\"100.77.191.60:9100\"} - node_memory_MemAvailable_bytes{instance=\"100.77.191.60:9100\"}",
+          "legendFormat": "RAM used (GB)",
+          "refId": "B"
         },
         {
-          "expr": "node_load15{instance=\"100.77.191.60:9100\"}",
-          "legendFormat": "15 min"
+          "expr": "node_memory_MemTotal_bytes{instance=\"100.77.191.60:9100\"}",
+          "legendFormat": "RAM total (GB)",
+          "refId": "C"
         }
       ],
+      "title": "RAM Usage",
+      "type": "timeseries"
+    },
+    {
+      "description": "Number of processes queued waiting for resources (CPU/disk/network), NOT a CPU percentage. This machine has 12 logical threads \u2014 the dashed red line at 12 marks the point where it's 'full' and processes start queuing.",
       "fieldConfig": {
         "defaults": {
-          "unit": "short",
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
             "hideFrom": {
+              "legend": false,
               "tooltip": false,
-              "viz": false,
-              "legend": false
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
             },
             "thresholdsStyle": {
               "mode": "line"
@@ -615,72 +1291,125 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
                 "value": 12
               }
             ]
-          }
-        },
-        "overrides": []
+          },
+          "unit": "short"
+        }
       },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 9
+      },
+      "id": 21,
       "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
         "legend": {
-          "displayMode": "table",
-          "placement": "bottom",
           "calcs": [
             "min",
             "max",
             "last"
-          ]
+          ],
+          "displayMode": "table",
+          "enableFacetedFilter": false,
+          "overflow": "ellipsis",
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
-          "mode": "multi"
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
         }
-      }
-    },
-    {
-      "id": 3,
-      "title": "Disk Usage - /",
-      "type": "timeseries",
-      "description": "Left axis: disk used as a percentage. Right axis: absolute disk used vs. free space, in GB, on the root (/) partition.",
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 25
       },
+      "pluginVersion": "13.1.3",
       "targets": [
         {
-          "refId": "A",
-          "expr": "100 * (1 - (node_filesystem_avail_bytes{mountpoint=\"/\", instance=\"100.77.191.60:9100\"} / node_filesystem_size_bytes{mountpoint=\"/\", instance=\"100.77.191.60:9100\"}))",
-          "legendFormat": "Disk used %"
+          "expr": "node_load1{instance=\"100.77.191.60:9100\"}",
+          "legendFormat": "1 min",
+          "refId": "A"
         },
         {
-          "refId": "B",
-          "expr": "node_filesystem_size_bytes{mountpoint=\"/\", instance=\"100.77.191.60:9100\"} - node_filesystem_avail_bytes{mountpoint=\"/\", instance=\"100.77.191.60:9100\"}",
-          "legendFormat": "Disk used (GB)"
+          "expr": "node_load5{instance=\"100.77.191.60:9100\"}",
+          "legendFormat": "5 min",
+          "refId": "B"
         },
         {
-          "refId": "C",
-          "expr": "node_filesystem_avail_bytes{mountpoint=\"/\", instance=\"100.77.191.60:9100\"}",
-          "legendFormat": "Disk free (GB)"
+          "expr": "node_load15{instance=\"100.77.191.60:9100\"}",
+          "legendFormat": "15 min",
+          "refId": "C"
         }
       ],
+      "title": "Load Average",
+      "type": "timeseries"
+    },
+    {
+      "description": "Left axis: disk used as a percentage. Right axis: absolute disk used vs. free space, in GB, on the root (/) partition.",
       "fieldConfig": {
         "defaults": {
-          "unit": "percent",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
           "max": 100,
           "min": 0,
-          "custom": {
-            "hideFrom": {
-              "tooltip": false,
-              "viz": false,
-              "legend": false
-            }
-          }
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
         },
         "overrides": [
           {
@@ -743,333 +1472,171 @@
           }
         ]
       },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 9
+      },
+      "id": 3,
       "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
         "legend": {
-          "displayMode": "table",
-          "placement": "bottom",
           "calcs": [
             "last"
-          ]
+          ],
+          "displayMode": "table",
+          "enableFacetedFilter": false,
+          "overflow": "ellipsis",
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
-          "mode": "multi"
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
         }
-      }
+      },
+      "pluginVersion": "13.1.3",
+      "targets": [
+        {
+          "expr": "100 * (1 - (node_filesystem_avail_bytes{mountpoint=\"/\", instance=\"100.77.191.60:9100\"} / node_filesystem_size_bytes{mountpoint=\"/\", instance=\"100.77.191.60:9100\"}))",
+          "legendFormat": "Disk used %",
+          "refId": "A"
+        },
+        {
+          "expr": "node_filesystem_size_bytes{mountpoint=\"/\", instance=\"100.77.191.60:9100\"} - node_filesystem_avail_bytes{mountpoint=\"/\", instance=\"100.77.191.60:9100\"}",
+          "legendFormat": "Disk used (GB)",
+          "refId": "B"
+        },
+        {
+          "expr": "node_filesystem_avail_bytes{mountpoint=\"/\", instance=\"100.77.191.60:9100\"}",
+          "legendFormat": "Disk free (GB)",
+          "refId": "C"
+        }
+      ],
+      "title": "Disk Usage - /",
+      "type": "timeseries"
     },
     {
-      "id": 300,
-      "title": "\ud83d\udd25 THERMAL & COOLING",
-      "type": "row",
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 33
+        "y": 17
       },
-      "collapsed": false
+      "id": 26,
+      "title": "\ud83d\udda5\ufe0f GPU & CONTAINERS",
+      "type": "row"
     },
     {
-      "id": 4,
-      "title": "CPU Package Temp (\u00b0C)",
-      "type": "timeseries",
-      "description": "The 'Package id 0' sensor only \u2014 a separate physical sensor from the 6 cores, and the one used by the BIOS/OS for thermal throttling.",
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 0,
-        "y": 34
-      },
-      "targets": [
-        {
-          "expr": "node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp1\", instance=\"100.77.191.60:9100\"}",
-          "legendFormat": "Package id 0"
-        }
-      ],
       "fieldConfig": {
         "defaults": {
-          "unit": "celsius",
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
             "hideFrom": {
+              "legend": false,
               "tooltip": false,
-              "viz": false,
-              "legend": false
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
             }
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom",
-          "calcs": [
-            "min",
-            "max",
-            "mean",
-            "last"
-          ]
-        },
-        "tooltip": {
-          "mode": "multi"
-        }
-      }
-    },
-    {
-      "id": 18,
-      "title": "CPU Per-Core Temp (\u00b0C)",
-      "type": "timeseries",
-      "description": "6 individual core sensors (Core 0-5) \u2014 separate from Package. Useful for seeing which specific core is running hottest.",
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 8,
-        "y": 34
-      },
-      "targets": [
-        {
-          "expr": "node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp2\", instance=\"100.77.191.60:9100\"}",
-          "legendFormat": "Core 0"
-        },
-        {
-          "expr": "node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp3\", instance=\"100.77.191.60:9100\"}",
-          "legendFormat": "Core 1"
-        },
-        {
-          "expr": "node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp4\", instance=\"100.77.191.60:9100\"}",
-          "legendFormat": "Core 2"
-        },
-        {
-          "expr": "node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp5\", instance=\"100.77.191.60:9100\"}",
-          "legendFormat": "Core 3"
-        },
-        {
-          "expr": "node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp6\", instance=\"100.77.191.60:9100\"}",
-          "legendFormat": "Core 4"
-        },
-        {
-          "expr": "node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp7\", instance=\"100.77.191.60:9100\"}",
-          "legendFormat": "Core 5"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "celsius",
-          "custom": {
-            "hideFrom": {
-              "tooltip": false,
-              "viz": false,
-              "legend": false
-            }
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom",
-          "calcs": [
-            "min",
-            "max",
-            "mean",
-            "last"
-          ]
-        },
-        "tooltip": {
-          "mode": "multi"
-        }
-      }
-    },
-    {
-      "id": 5,
-      "title": "GPU Temp (\u00b0C)",
-      "type": "timeseries",
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 16,
-        "y": 34
-      },
-      "targets": [
-        {
-          "expr": "nvidia_smi_temperature_gpu",
-          "legendFormat": "GPU temp"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "celsius",
-          "custom": {
-            "hideFrom": {
-              "tooltip": false,
-              "viz": false,
-              "legend": false
-            }
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom",
-          "calcs": [
-            "min",
-            "max",
-            "mean",
-            "last"
-          ]
-        },
-        "tooltip": {
-          "mode": "multi"
-        }
-      }
-    },
-    {
-      "id": 16,
-      "title": "CPU Fan RPM",
-      "type": "timeseries",
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 42
-      },
-      "targets": [
-        {
-          "expr": "node_hwmon_fan_rpm{chip=~\".*\", instance=\"100.77.191.60:9100\"}",
-          "legendFormat": "{{chip}} {{sensor}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "rotrpm",
+          },
+          "max": 100,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 5000
-              },
-              {
-                "color": "orange",
-                "value": 6000
+                "value": 0
               },
               {
                 "color": "red",
-                "value": 6500
+                "value": 80
               }
             ]
           },
-          "custom": {
-            "hideFrom": {
-              "tooltip": false,
-              "viz": false,
-              "legend": false
-            },
-            "thresholdsStyle": {
-              "mode": "line"
-            }
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom",
-          "calcs": [
-            "min",
-            "max",
-            "mean",
-            "last"
-          ]
-        },
-        "tooltip": {
-          "mode": "multi"
+          "unit": "percent"
         }
-      }
-    },
-    {
-      "id": 400,
-      "title": "\ud83d\udda5\ufe0f GPU & CONTAINERS",
-      "type": "row",
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 50
       },
-      "collapsed": false
-    },
-    {
-      "id": 6,
-      "title": "GPU Utilization (%)",
-      "type": "timeseries",
       "gridPos": {
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 51
+        "y": 18
       },
+      "id": 6,
+      "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "enableFacetedFilter": false,
+          "overflow": "ellipsis",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.1.3",
       "targets": [
         {
           "expr": "nvidia_smi_utilization_gpu_ratio * 100",
-          "legendFormat": "GPU util %"
+          "legendFormat": "GPU util %",
+          "refId": "A"
         }
       ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "percent",
-          "max": 100,
-          "min": 0,
-          "custom": {
-            "hideFrom": {
-              "tooltip": false,
-              "viz": false,
-              "legend": false
-            }
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "calcs": []
-        }
-      }
+      "title": "GPU Utilization (%)",
+      "type": "timeseries"
     },
     {
-      "id": 8,
-      "title": "Running Containers",
-      "type": "stat",
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 8,
-        "y": 51
-      },
-      "targets": [
-        {
-          "expr": "count(count by (name) (container_memory_usage_bytes{name!=\"\"}))",
-          "legendFormat": "running"
-        }
-      ],
       "fieldConfig": {
         "defaults": {
-          "unit": "short",
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "red",
-                "value": null
+                "value": 0
               },
               {
                 "color": "yellow",
@@ -1080,56 +1647,140 @@
                 "value": 45
               }
             ]
-          }
-        },
-        "overrides": []
+          },
+          "unit": "short"
+        }
       },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 18
+      },
+      "id": 8,
       "options": {
         "colorMode": "background",
         "graphMode": "none",
         "justifyMode": "center",
-        "textMode": "auto"
-      }
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.1.3",
+      "targets": [
+        {
+          "expr": "count(count by (name) (container_memory_usage_bytes{name!=\"\"}))",
+          "legendFormat": "running",
+          "refId": "A"
+        }
+      ],
+      "title": "Running Containers",
+      "type": "stat"
     },
     {
-      "id": 9,
-      "title": "Per-Container CPU Usage",
-      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        }
+      },
       "gridPos": {
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 51
+        "y": 18
       },
-      "targets": [
-        {
-          "expr": "topk(10, sum by (name) (rate(container_cpu_usage_seconds_total{name!=\"\"}[5m])) * 100)",
-          "legendFormat": "{{name}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "percent",
-          "custom": {
-            "hideFrom": {
-              "tooltip": false,
-              "viz": false,
-              "legend": false
-            }
-          }
-        },
-        "overrides": []
-      },
+      "id": 9,
       "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
         "legend": {
-          "displayMode": "table",
-          "placement": "bottom",
           "calcs": [
             "mean",
             "max"
-          ]
+          ],
+          "displayMode": "table",
+          "enableFacetedFilter": false,
+          "overflow": "ellipsis",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
         }
-      }
+      },
+      "pluginVersion": "13.1.3",
+      "targets": [
+        {
+          "expr": "topk(10, sum by (name) (rate(container_cpu_usage_seconds_total{name!=\"\"}[5m])) * 100)",
+          "legendFormat": "{{name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Per-Container CPU Usage",
+      "type": "timeseries"
     }
   ]
 }
