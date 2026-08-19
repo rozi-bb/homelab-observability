@@ -2,7 +2,7 @@
   "title": "Server Overview",
   "uid": "server-overview",
   "schemaVersion": 39,
-  "version": 12,
+  "version": 13,
   "refresh": "5s",
   "time": {
     "from": "now-6h",
@@ -757,50 +757,6 @@
       }
     },
     {
-      "id": 7,
-      "title": "Network Throughput (bytes/s)",
-      "type": "timeseries",
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 33
-      },
-      "targets": [
-        {
-          "expr": "rate(node_network_receive_bytes_total{device!~\"lo|veth.*|docker.*|br-.*\"}[5m])",
-          "legendFormat": "{{device}} rx"
-        },
-        {
-          "expr": "rate(node_network_transmit_bytes_total{device!~\"lo|veth.*|docker.*|br-.*\"}[5m])",
-          "legendFormat": "{{device}} tx"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "Bps",
-          "custom": {
-            "hideFrom": {
-              "tooltip": false,
-              "viz": false,
-              "legend": false
-            }
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom",
-          "calcs": [
-            "mean",
-            "last"
-          ]
-        }
-      }
-    },
-    {
       "id": 300,
       "title": "\ud83d\udd25 THERMAL & COOLING",
       "type": "row",
@@ -808,7 +764,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 41
+        "y": 33
       },
       "collapsed": false
     },
@@ -821,7 +777,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 42
+        "y": 34
       },
       "targets": [
         {
@@ -867,7 +823,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 42
+        "y": 34
       },
       "targets": [
         {
@@ -932,7 +888,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 42
+        "y": 34
       },
       "targets": [
         {
@@ -977,7 +933,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 50
+        "y": 42
       },
       "targets": [
         {
@@ -1046,7 +1002,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 58
+        "y": 50
       },
       "collapsed": false
     },
@@ -1058,7 +1014,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 59
+        "y": 51
       },
       "targets": [
         {
@@ -1097,7 +1053,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 59
+        "y": 51
       },
       "targets": [
         {
@@ -1143,7 +1099,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 59
+        "y": 51
       },
       "targets": [
         {
