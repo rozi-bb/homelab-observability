@@ -65,7 +65,7 @@ Relevant context for interpreting temperature trends — the baseline shifts aro
 └───────────────────────────┬───────────────────────────────────┘
                              │
                     ┌────────▼────────┐
-                    │     Grafana      │  :3033 (dashboard, 24 custom panels)
+                    │     Grafana      │  :3033 (dashboard, 25 custom panels)
                     │  512M mem limit  │
                     └────────┬────────┘
                              │ queries
@@ -98,9 +98,9 @@ Loki + Promtail (log aggregation)
 | Service | Image | Port (host, Tailscale-only) | Function | Status |
 |---|---|---|---|---|
 | Prometheus | `prom/prometheus:latest` | `9099` | Time-series DB, scraping, alert rule evaluation | ✅ Running |
-| Grafana | `grafana/grafana:latest` | `3033` | Visual dashboard, 24 custom panels | ✅ Running |
+| Grafana | `grafana/grafana:latest` | `3033` | Visual dashboard, 25 custom panels | ✅ Running |
 | node_exporter | `prom/node-exporter:latest` | `9100` | Host metrics: CPU, RAM, disk, network, temperature, fan, load average | ✅ Running |
-| nvidia_gpu_exporter | `utkuozdemir/nvidia_gpu_exporter:latest` | `9835` | Temperature, utilization, memory of the GTX 1050 GPU | ✅ Running (GPU fan speed **not available** — this laptop GPU doesn't expose that sensor via `nvidia-smi`) |
+| nvidia_gpu_exporter | `utkuozdemir/nvidia_gpu_exporter:latest` | `9835` | Temperature, utilization, memory of the GTX 1050 GPU | ✅ Running (GPU fan speed **not available via this exporter** — the GTX 1050 Mobile doesn't expose that sensor through `nvidia-smi`; GPU fan RPM is tracked separately via `node_exporter`'s hwmon collector instead — see §14 #12) |
 | cAdvisor | `gcr.io/cadvisor/cadvisor:latest` | `8081` (moved from default `8080`, which conflicted with another project's dev stack on the same machine) | Per-container Docker metrics | ✅ Running |
 | `docker-status.sh` (custom) | bash script + systemd timer, not a container | — | Exports `docker inspect` RestartCount/State to node_exporter's textfile collector, refreshed every 5s | ✅ Running |
 | Alertmanager | `prom/alertmanager` | — | Alert routing & deduplication → Telegram | ❌ Not built |
@@ -203,7 +203,7 @@ homelab-observability/
 │   └── docker-status.timer          # triggers every 5 seconds
 └── grafana/
     ├── dashboards/
-    │   └── overview.json            # 24 custom panels, built from scratch
+    │   └── overview.json            # 25 custom panels, built from scratch
     └── provisioning/
         ├── datasources/             # Prometheus auto-provisioning
         └── dashboards/              # provider config
@@ -221,7 +221,7 @@ Not yet present (Phase 2/3/4):
 2. **Phase 2 — Downsampling:** ❌ **Not started.** Recording rules for hourly/daily aggregates haven't been created.
 3. **Phase 3 — Alerting:** 🟡 **Partial.** Prometheus alert rules (`ContainerCrashLooping`, etc.) are live and have been validated against real incidents. Alertmanager + Telegram Bot integration hasn't been built.
 4. **Phase 4 — Logs:** ❌ **Not started.** Loki + Promtail aren't part of the stack yet.
-5. **Phase 5 — Custom dashboard & polish:** ✅ **Done** (ahead of schedule — worked on in parallel with Phase 1 due to the need for repeated validation). 24 custom panels, 4 row groups (Temperature Overview, System Resources, Thermal & Cooling, GPU & Containers), every query manually validated against Prometheus, 2 bugs found & fixed (wrong RPM unit, threshold styling not rendering on the graph).
+5. **Phase 5 — Custom dashboard & polish:** ✅ **Done** (ahead of schedule — worked on in parallel with Phase 1 due to the need for repeated validation). 25 custom panels grouped into a Maintenance Log plus 4 row sections (CPU, GPU, System & Storage, Containers — CPU and GPU deliberately kept in fully separate sections, each with its own temp stats, usage, and fan RPM), every query manually validated against Prometheus, several bugs found & fixed along the way (wrong RPM unit, threshold styling not rendering on the graph, duplicate legend rows from an instance-label change).
 6. **Phase 6 — Portfolio documentation:** 🟡 **In progress.** This PRD + README.md.
 
 ## 12. Open Items / User Confirmation Needed
@@ -258,3 +258,4 @@ This section is deliberately kept as evidence of a genuine engineering process �
 | 9 | "rpm" unit on the CPU Fan RPM panel didn't match Grafana's convention | Grafana's valid unit ID is `rotrpm`, not `rpm` (confirmed from Grafana's JS bundle) | Changed to `rotrpm` |
 | 10 | Threshold colors defined on the CPU Fan RPM panel weren't rendering as a line on the graph | `custom.thresholdsStyle.mode` wasn't set (Grafana default: `off`) | Added `thresholdsStyle: {mode: "line"}` |
 | 11 | Network Throughput panel showed suspiciously tiny values (hundreds of B/s) that never reflected real WiFi/Tailscale activity | `node_exporter` ran on the regular Docker bridge network, not `network_mode: host`. `/proc/net/dev` reflects the *reading process's own* network namespace regardless of how `/proc` is mounted, so node_exporter was only ever reporting its own virtual interface into the Docker bridge — never the host's real `wlo1`/`tailscale0` | Switched `node_exporter` to `network_mode: host` with an explicit `--web.listen-address=${TAILSCALE_IP}:9100` (since `ports:` is ignored under host networking, this flag is what keeps it off `0.0.0.0`); updated the Prometheus scrape target from the Docker DNS name to the literal Tailscale IP, since the container is no longer on the `observability` bridge network |
+| 12 | GPU Fan Speed panel had been removed entirely (incident #6) on the assumption fan RPM wasn't available for this GPU at all | `nvidia-smi` genuinely doesn't expose it, but that's not the only source: `node_exporter`'s hwmon collector already picks up `fan1`/`fan2` from the `asus-isa-0000` sensor (the laptop's embedded controller, not the GPU itself) — `sensors asus-isa-0000` confirmed `cpu_fan` and `gpu_fan` are both read this way | Split the existing "CPU Fan RPM" panel (which had silently been graphing both fans together) into two: CPU Fan RPM (`fan1`) and a new GPU Fan RPM (`fan2`), with separate thresholds recalibrated to this machine's real values (5300 RPM / 4800 RPM) |
