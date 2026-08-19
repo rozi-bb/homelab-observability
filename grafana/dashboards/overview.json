@@ -2,7 +2,7 @@
   "title": "Server Overview",
   "uid": "server-overview",
   "schemaVersion": 39,
-  "version": 10,
+  "version": 11,
   "refresh": "5s",
   "time": {
     "from": "now-6h",
@@ -459,8 +459,9 @@
     },
     {
       "id": 2,
-      "title": "RAM Usage (%)",
+      "title": "RAM Usage",
       "type": "timeseries",
+      "description": "Left axis: RAM used as a percentage. Right axis: absolute RAM used vs. total, in GB.",
       "gridPos": {
         "h": 8,
         "w": 12,
@@ -469,8 +470,19 @@
       },
       "targets": [
         {
+          "refId": "A",
           "expr": "100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))",
           "legendFormat": "RAM used %"
+        },
+        {
+          "refId": "B",
+          "expr": "node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes",
+          "legendFormat": "RAM used (GB)"
+        },
+        {
+          "refId": "C",
+          "expr": "node_memory_MemTotal_bytes",
+          "legendFormat": "RAM total (GB)"
         }
       ],
       "fieldConfig": {
@@ -486,13 +498,77 @@
             }
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "RAM used (GB)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "max",
+                "value": null
+              },
+              {
+                "id": "min",
+                "value": null
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "RAM total (GB)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "dash": [
+                    10,
+                    10
+                  ],
+                  "fill": "dash"
+                }
+              },
+              {
+                "id": "max",
+                "value": null
+              },
+              {
+                "id": "min",
+                "value": null
+              }
+            ]
+          }
+        ]
       },
       "options": {
         "legend": {
-          "displayMode": "list",
+          "displayMode": "table",
           "placement": "bottom",
-          "calcs": []
+          "calcs": [
+            "last"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
         }
       }
     },
