@@ -2,7 +2,7 @@
   "title": "Server Overview",
   "uid": "server-overview",
   "schemaVersion": 42,
-  "version": 64,
+  "version": 70,
   "refresh": "5s",
   "time": {
     "from": "now-6h",
@@ -812,7 +812,7 @@
       "pluginVersion": "13.1.3",
       "targets": [
         {
-          "expr": "node_hwmon_fan_rpm{chip=~\"asus.*\", sensor=\"fan1\", instance=\"100.77.191.60:9100\"}",
+          "expr": "node_hwmon_fan_rpm{chip=~\".*asus.*\", sensor=\"fan1\", instance=\"100.77.191.60:9100\"}",
           "legendFormat": "CPU fan",
           "refId": "A"
         }
@@ -1328,7 +1328,7 @@
       },
       "targets": [
         {
-          "expr": "node_hwmon_fan_rpm{chip=~\"asus.*\", sensor=\"fan2\", instance=\"100.77.191.60:9100\"}",
+          "expr": "node_hwmon_fan_rpm{chip=~\".*asus.*\", sensor=\"fan2\", instance=\"100.77.191.60:9100\"}",
           "legendFormat": "GPU fan",
           "refId": "A"
         }
