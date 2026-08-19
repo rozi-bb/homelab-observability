@@ -2,11 +2,11 @@
   "title": "Server Overview",
   "uid": "server-overview",
   "schemaVersion": 42,
-  "version": 53,
+  "version": 60,
   "refresh": "5s",
   "time": {
-    "from": "2026-08-19T07:05:09.459Z",
-    "to": "2026-08-19T07:17:34.225Z"
+    "from": "now-6h",
+    "to": "now"
   },
   "tags": [
     "homelab-observability",
@@ -14,23 +14,11 @@
   ],
   "panels": [
     {
-      "collapsed": false,
       "gridPos": {
-        "h": 1,
+        "h": 3,
         "w": 24,
         "x": 0,
         "y": 0
-      },
-      "id": 23,
-      "title": "\ud83c\udf21\ufe0f TEMPERATURE OVERVIEW",
-      "type": "row"
-    },
-    {
-      "gridPos": {
-        "h": 7,
-        "w": 24,
-        "x": 0,
-        "y": 1
       },
       "id": 22,
       "options": {
@@ -46,6 +34,18 @@
       "targets": [],
       "title": "\ud83d\udee0\ufe0f Maintenance Log",
       "type": "text"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 3
+      },
+      "id": 500,
+      "title": "\ud83d\udda5\ufe0f CPU",
+      "type": "row"
     },
     {
       "description": "Package id 0 temperature right now (real-time, not historical).",
@@ -79,7 +79,7 @@
         "h": 6,
         "w": 6,
         "x": 0,
-        "y": 8
+        "y": 4
       },
       "id": 19,
       "options": {
@@ -143,7 +143,7 @@
         "h": 6,
         "w": 6,
         "x": 6,
-        "y": 8
+        "y": 4
       },
       "id": 10,
       "options": {
@@ -199,7 +199,7 @@
         "h": 6,
         "w": 6,
         "x": 12,
-        "y": 8
+        "y": 4
       },
       "id": 11,
       "options": {
@@ -263,7 +263,7 @@
         "h": 6,
         "w": 6,
         "x": 18,
-        "y": 8
+        "y": 4
       },
       "id": 12,
       "options": {
@@ -294,6 +294,209 @@
       ],
       "title": "CPU Package Temp - Max",
       "type": "stat"
+    },
+    {
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 10
+      },
+      "id": 1,
+      "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "enableFacetedFilter": false,
+          "overflow": "ellipsis",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.1.3",
+      "targets": [
+        {
+          "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\", instance=\"100.77.191.60:9100\"}[5m])) * 100)",
+          "legendFormat": "CPU busy %",
+          "refId": "A"
+        }
+      ],
+      "title": "CPU Usage (%)",
+      "type": "timeseries"
+    },
+    {
+      "description": "Number of processes queued waiting for resources (CPU/disk/network), NOT a CPU percentage. This machine has 12 logical threads \u2014 the dashed red line at 12 marks the point where it's 'full' and processes start queuing.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 12
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 10
+      },
+      "id": 21,
+      "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "last"
+          ],
+          "displayMode": "table",
+          "enableFacetedFilter": false,
+          "overflow": "ellipsis",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.1.3",
+      "targets": [
+        {
+          "expr": "node_load1{instance=\"100.77.191.60:9100\"}",
+          "legendFormat": "1 min",
+          "refId": "A"
+        },
+        {
+          "expr": "node_load5{instance=\"100.77.191.60:9100\"}",
+          "legendFormat": "5 min",
+          "refId": "B"
+        },
+        {
+          "expr": "node_load15{instance=\"100.77.191.60:9100\"}",
+          "legendFormat": "15 min",
+          "refId": "C"
+        }
+      ],
+      "title": "Load Average",
+      "type": "timeseries"
     },
     {
       "description": "The 'Package id 0' sensor only \u2014 a separate physical sensor from the 6 cores, and the one used by the BIOS/OS for thermal throttling.",
@@ -356,7 +559,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 14
+        "y": 18
       },
       "id": 4,
       "options": {
@@ -455,7 +658,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 14
+        "y": 18
       },
       "id": 18,
       "options": {
@@ -519,6 +722,124 @@
       "type": "timeseries"
     },
     {
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 5000
+              },
+              {
+                "color": "orange",
+                "value": 6000
+              },
+              {
+                "color": "red",
+                "value": 6500
+              }
+            ]
+          },
+          "unit": "rotrpm"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 26
+      },
+      "id": 16,
+      "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "mean",
+            "last"
+          ],
+          "displayMode": "table",
+          "enableFacetedFilter": false,
+          "overflow": "ellipsis",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.1.3",
+      "targets": [
+        {
+          "expr": "node_hwmon_fan_rpm{chip=~\".*\", instance=\"100.77.191.60:9100\"}",
+          "legendFormat": "{{chip}} {{sensor}}",
+          "refId": "A"
+        }
+      ],
+      "title": "CPU Fan RPM",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 34
+      },
+      "id": 501,
+      "title": "\ud83c\udfae GPU",
+      "type": "row"
+    },
+    {
       "description": "GPU temperature right now (real-time, not historical).",
       "fieldConfig": {
         "defaults": {
@@ -550,7 +871,7 @@
         "h": 6,
         "w": 6,
         "x": 0,
-        "y": 22
+        "y": 35
       },
       "id": 20,
       "options": {
@@ -614,7 +935,7 @@
         "h": 6,
         "w": 6,
         "x": 6,
-        "y": 22
+        "y": 35
       },
       "id": 13,
       "options": {
@@ -670,7 +991,7 @@
         "h": 6,
         "w": 6,
         "x": 12,
-        "y": 22
+        "y": 35
       },
       "id": 14,
       "options": {
@@ -734,7 +1055,7 @@
         "h": 6,
         "w": 6,
         "x": 18,
-        "y": 22
+        "y": 35
       },
       "id": 15,
       "options": {
@@ -826,7 +1147,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 28
+        "y": 41
       },
       "id": 5,
       "options": {
@@ -901,124 +1222,6 @@
               "mode": "none"
             },
             "thresholdsStyle": {
-              "mode": "line"
-            }
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "yellow",
-                "value": 5000
-              },
-              {
-                "color": "orange",
-                "value": 6000
-              },
-              {
-                "color": "red",
-                "value": 6500
-              }
-            ]
-          },
-          "unit": "rotrpm"
-        }
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 28
-      },
-      "id": 16,
-      "options": {
-        "annotations": {
-          "clustering": -1,
-          "multiLane": false
-        },
-        "legend": {
-          "calcs": [
-            "min",
-            "max",
-            "mean",
-            "last"
-          ],
-          "displayMode": "table",
-          "enableFacetedFilter": false,
-          "overflow": "ellipsis",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "13.1.3",
-      "targets": [
-        {
-          "expr": "node_hwmon_fan_rpm{chip=~\".*\", instance=\"100.77.191.60:9100\"}",
-          "legendFormat": "{{chip}} {{sensor}}",
-          "refId": "A"
-        }
-      ],
-      "title": "CPU Fan RPM",
-      "type": "timeseries"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 0
-      },
-      "id": 25,
-      "title": "\ud83d\udcca SYSTEM RESOURCES",
-      "type": "row"
-    },
-    {
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "showValues": false,
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
               "mode": "off"
             }
           },
@@ -1043,10 +1246,10 @@
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 0,
-        "y": 1
+        "x": 12,
+        "y": 41
       },
-      "id": 1,
+      "id": 6,
       "options": {
         "annotations": {
           "clustering": -1,
@@ -1069,13 +1272,25 @@
       "pluginVersion": "13.1.3",
       "targets": [
         {
-          "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\", instance=\"100.77.191.60:9100\"}[5m])) * 100)",
-          "legendFormat": "CPU busy %",
+          "expr": "nvidia_smi_utilization_gpu_ratio * 100",
+          "legendFormat": "GPU util %",
           "refId": "A"
         }
       ],
-      "title": "CPU Usage (%)",
+      "title": "GPU Utilization (%)",
       "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 49
+      },
+      "id": 502,
+      "title": "\ud83d\udcca System & Storage",
+      "type": "row"
     },
     {
       "description": "Left axis: RAM used as a percentage. Right axis: absolute RAM used vs. total, in GB.",
@@ -1199,8 +1414,8 @@
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 12,
-        "y": 1
+        "x": 0,
+        "y": 50
       },
       "id": 2,
       "options": {
@@ -1243,114 +1458,6 @@
         }
       ],
       "title": "RAM Usage",
-      "type": "timeseries"
-    },
-    {
-      "description": "Number of processes queued waiting for resources (CPU/disk/network), NOT a CPU percentage. This machine has 12 logical threads \u2014 the dashed red line at 12 marks the point where it's 'full' and processes start queuing.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "showValues": false,
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "line"
-            }
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "red",
-                "value": 12
-              }
-            ]
-          },
-          "unit": "short"
-        }
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 9
-      },
-      "id": 21,
-      "options": {
-        "annotations": {
-          "clustering": -1,
-          "multiLane": false
-        },
-        "legend": {
-          "calcs": [
-            "min",
-            "max",
-            "last"
-          ],
-          "displayMode": "table",
-          "enableFacetedFilter": false,
-          "overflow": "ellipsis",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "13.1.3",
-      "targets": [
-        {
-          "expr": "node_load1{instance=\"100.77.191.60:9100\"}",
-          "legendFormat": "1 min",
-          "refId": "A"
-        },
-        {
-          "expr": "node_load5{instance=\"100.77.191.60:9100\"}",
-          "legendFormat": "5 min",
-          "refId": "B"
-        },
-        {
-          "expr": "node_load15{instance=\"100.77.191.60:9100\"}",
-          "legendFormat": "15 min",
-          "refId": "C"
-        }
-      ],
-      "title": "Load Average",
       "type": "timeseries"
     },
     {
@@ -1476,7 +1583,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 9
+        "y": 50
       },
       "id": 3,
       "options": {
@@ -1527,106 +1634,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 17
+        "y": 58
       },
-      "id": 26,
-      "title": "\ud83d\udda5\ufe0f GPU & CONTAINERS",
+      "id": 503,
+      "title": "\ud83d\udc33 Containers",
       "type": "row"
-    },
-    {
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "showValues": false,
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "max": 100,
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "percent"
-        }
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 0,
-        "y": 18
-      },
-      "id": 6,
-      "options": {
-        "annotations": {
-          "clustering": -1,
-          "multiLane": false
-        },
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "enableFacetedFilter": false,
-          "overflow": "ellipsis",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "13.1.3",
-      "targets": [
-        {
-          "expr": "nvidia_smi_utilization_gpu_ratio * 100",
-          "legendFormat": "GPU util %",
-          "refId": "A"
-        }
-      ],
-      "title": "GPU Utilization (%)",
-      "type": "timeseries"
     },
     {
       "fieldConfig": {
@@ -1654,8 +1666,8 @@
       "gridPos": {
         "h": 8,
         "w": 8,
-        "x": 8,
-        "y": 18
+        "x": 0,
+        "y": 59
       },
       "id": 8,
       "options": {
@@ -1744,9 +1756,9 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 8,
-        "x": 16,
-        "y": 18
+        "w": 16,
+        "x": 8,
+        "y": 59
       },
       "id": 9,
       "options": {
