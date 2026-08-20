@@ -1,0 +1,39 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: telegram-default
+  group_by: ["alertname"]
+  group_wait: 10s
+  group_interval: 5m
+  repeat_interval: 4h
+  routes:
+    # Anything the container-health / host-resources / self-monitoring groups
+    # mark critical gets a faster repeat so it doesn't sit quiet for 4h if
+    # the first notification gets missed.
+    - matchers:
+        - severity="critical"
+      receiver: telegram-default
+      repeat_interval: 1h
+
+receivers:
+  - name: telegram-default
+    telegram_configs:
+      - bot_token: "__TELEGRAM_BOT_TOKEN__"
+        chat_id: __TELEGRAM_CHAT_ID__
+        parse_mode: "HTML"
+        message: |
+          {{ if eq .Status "firing" }}🔴{{ else }}✅{{ end }} <b>{{ .CommonLabels.alertname }}</b> ({{ .Status }})
+          {{ range .Alerts }}
+          {{ .Annotations.summary }}
+          {{ .Annotations.description }}
+          {{ end }}
+
+inhibit_rules:
+  # If the whole textfile exporter has gone stale, ContainerCrashLooping and
+  # ContainerRestartedRecently are reading garbage data anyway — no point
+  # paging for both the symptom and its own root cause at once.
+  - source_matchers:
+      - alertname="DockerStatusExporterStale"
+    target_matchers:
+      - alertname=~"ContainerCrashLooping|ContainerRestartedRecently"

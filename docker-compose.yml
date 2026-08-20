@@ -161,6 +161,63 @@ services:
     networks:
       - observability
 
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: obs-alertmanager
+    restart: unless-stopped
+    environment:
+      # Passed through as env vars (same tier as GF_SECURITY_ADMIN_PASSWORD)
+      # so the entrypoint script below can substitute them into the config at
+      # container start — Alertmanager's config file format has no built-in
+      # ${VAR} expansion the way docker-compose.yml itself does, so the token
+      # can't just be written into alertmanager.yml.template directly.
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+    volumes:
+      - ./alertmanager/alertmanager.yml.template:/etc/alertmanager/alertmanager.yml.template:ro
+      - alertmanager-data:/alertmanager
+    # prom/alertmanager's image has no envsubst, but does have sh + sed, so
+    # sed does the substitution: render the real config into /tmp (writable
+    # inside the container even without a named volume for it), then exec
+    # the real binary. $$ escapes the secrets from docker-compose's OWN
+    # ${VAR} substitution (which happens once, at `docker compose up` time,
+    # and would otherwise bake the token as plaintext into `docker inspect`
+    # output) so they're resolved by the container's shell at runtime instead
+    # — consistent with how TAILSCALE_IP is deliberately NOT escaped below,
+    # since that one isn't a secret and baking it in is fine.
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        sed -e "s|__TELEGRAM_BOT_TOKEN__|$$TELEGRAM_BOT_TOKEN|g" \
+            -e "s|__TELEGRAM_CHAT_ID__|$$TELEGRAM_CHAT_ID|g" \
+            /etc/alertmanager/alertmanager.yml.template > /tmp/alertmanager.yml
+        exec /bin/alertmanager \
+          --config.file=/tmp/alertmanager.yml \
+          --storage.path=/alertmanager
+        # No --web.listen-address here on purpose: this container is on the
+        # regular bridge network (not network_mode: host like node_exporter),
+        # so it has no route to bind the Tailscale IP directly from inside its
+        # own network namespace — that produced "bind: cannot assign requested
+        # address" when tried. Same pattern as prometheus/grafana/cadvisor
+        # below: listen on the container's default 0.0.0.0, and let the
+        # ports: mapping do the Tailscale-only restriction on the host side.
+    ports:
+      - "${TAILSCALE_IP}:9093:9093"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:9093/-/healthy || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 64M
+    networks:
+      - observability
+
 networks:
   observability:
     driver: bridge
@@ -168,3 +225,4 @@ networks:
 volumes:
   prometheus-data:
   grafana-data:
+  alertmanager-data:

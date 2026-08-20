@@ -1,6 +1,6 @@
 # PRD — Homelab Observability Stack
 
-> **Implementation status:** Phase 1 (core metrics) and Phase 5 (custom dashboard) are complete, validated against real data, and hardened by a dedicated production-readiness audit (12 alert rules, reliable boot recovery, a repeatable query validator — see §14 #13-#20). Phase 2 (downsampling), Phase 3 (Alertmanager + Telegram — the Prometheus-side alert rules already exist, Telegram integration doesn't), and Phase 4 (logs/Loki) have not been started. Details per phase in §11.
+> **Implementation status:** Phase 1 (core metrics), Phase 3 (alerting, including live Telegram delivery), and Phase 5 (custom dashboard) are complete, validated against real data, and hardened by a dedicated production-readiness audit (12 alert rules, reliable boot recovery, a repeatable query validator — see §14 #13-#20). Phase 2 (downsampling) and Phase 4 (logs/Loki) have not been started. Details per phase in §11.
 
 ## 1. Summary
 
@@ -42,7 +42,7 @@ Relevant context for interpreting temperature trends — the baseline shifts aro
 
 1. Monitor real-time and historical: CPU usage, RAM usage, disk usage, CPU/GPU temperature, fan RPM, load average, network I/O, per-container resource usage (Docker), and container up/down/crash-loop status.
 2. Tiered data retention (downsampling) for storage efficiency: high-resolution raw data short-term, hourly/daily aggregates long-term. *(not yet implemented — see §11 Phase 2)*
-3. Automatic alerting to Telegram when metrics cross critical thresholds. *(Prometheus-side alert rules exist — see §8; Alertmanager→Telegram integration does not yet)*
+3. Automatic alerting to Telegram when metrics cross critical thresholds. *(done — see §8)*
 4. Dashboard access **only** via Tailscale (no public internet exposure).
 5. All services are new and self-contained (not piggybacking on the Grafana/other services already running for other projects).
 6. Full observability: metrics **+ logs** (not just metrics) — for a stronger portfolio story ("full observability," not just basic monitoring). *(logs/Loki not yet implemented)*
@@ -88,8 +88,20 @@ Relevant context for interpreting temperature trends — the baseline shifts aro
 │             │ │        │ │container│ │ scrapes)            │
 └─────────────┘ └────────┘ └─────────┘ └────────────────────┘
 
-── Not yet implemented (Phase 3/4) ──
-Alertmanager (routes alerts → Telegram Bot API)
+      │ alerts (on rule match)
+      ▼
+┌─────────────┐
+│ Alertmanager │  :9093, routes/dedupes, also scraped by
+│              │  Prometheus itself for self-monitoring
+└──────┬──────┘
+       │ Bot API
+       ▼
+┌─────────────┐
+│  Telegram    │
+└─────────────┘
+
+── Not yet implemented (Phase 2/4) ──
+Recording rules for hourly/daily downsampling
 Loki + Promtail (log aggregation)
 ```
 
@@ -104,7 +116,7 @@ Loki + Promtail (log aggregation)
 | cAdvisor | `gcr.io/cadvisor/cadvisor:latest` | `8081` (moved from default `8080`, which conflicted with another project's dev stack on the same machine) | Per-container Docker metrics | ✅ Running |
 | `docker-status.sh` (custom) | bash script + systemd timer, not a container | — | Exports `docker inspect` RestartCount/State to node_exporter's textfile collector, refreshed every 5s | ✅ Running |
 | `boot-up.sh` (custom) | bash script + systemd unit, not a container | — | Boot-time convergence: waits for the Tailscale address, runs `docker compose up -d`, then repairs services that came back without their port bindings (see §14 #13) | ✅ Running |
-| Alertmanager | `prom/alertmanager` | — | Alert routing & deduplication → Telegram | ❌ Not built |
+| Alertmanager | `prom/alertmanager:latest` | `9093` | Alert routing, dedup, and delivery to Telegram; also a Prometheus scrape target itself | ✅ Running |
 | Loki | `grafana/loki` | — | Log aggregation storage | ❌ Not built |
 | Promtail | `grafana/promtail` | — | Log shipper from all containers to Loki | ❌ Not built |
 
@@ -153,7 +165,7 @@ The 5GB size cap (`--storage.tsdb.retention.size`) was added during the producti
 
 ## 8. Alerting
 
-**Status: 12 Prometheus-native alert rules are live and actively evaluated. Routing to Telegram (Alertmanager) has not been built** — alerts currently only show up as "firing" in the Prometheus UI, with no outbound notification yet.
+**Status: 12 Prometheus-native alert rules are live, actively evaluated, and delivered to Telegram via Alertmanager.** Validated end-to-end with a genuinely firing alert during setup (`ContainerCrashLooping` on `obs-alertmanager` itself, caused by repeated `--force-recreate` during testing) — not a synthetic test alert.
 
 ### Alert rules currently running (`prometheus/rules/alerting-rules.yml`)
 
@@ -167,23 +179,33 @@ The 5GB size cap (`--storage.tsdb.retention.size`) was added during the producti
 | `CpuTemperatureWarning` / `CpuTemperatureCritical` | CPU Package > 85°C (for 5m) / > 95°C (for 2m) | warning / critical | node_exporter hwmon — Package sensor specifically, not a core average (§6) |
 | `GpuTemperatureWarning` | GPU > 85°C, for 5m | warning | nvidia_gpu_exporter |
 | `ExporterDown` | `up == 0`, for 2m | critical | Prometheus itself — without this a dead exporter just looks like flat graphs |
-| `PrometheusTargetsMissing` | `count(up) < 4`, for 5m | critical | Catches the reboot failure mode in §14 #13, where a container is Up and passing its healthcheck but unreachable from outside the host |
+| `PrometheusTargetsMissing` | `count(up) < 5`, for 5m | critical | Catches the reboot failure mode in §14 #13, where a container is Up and passing its healthcheck but unreachable from outside the host |
 | `ObservabilityContainerMemoryHigh` | Any `obs-*` container above 85% of its own `docker-compose.yml` memory limit, for 10m | warning | cAdvisor — added after Grafana was found at 99.3% of its limit *during the audit itself* (§14 #19); this stack watching everything except itself is exactly how that OOM went unnoticed the first time |
 
-These three alerts have been **validated against real incidents** during development (see §14) — not untested placeholder alerts.
+These alerts have been **validated against real incidents** during development (see §14) — not untested placeholder alerts.
 
-**Planned channel:** Telegram Bot (via an Alertmanager webhook receiver)
-**Prerequisite:** user creates a bot via @BotFather, providing `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` (stored in `.env`, not committed)
+### Delivery: Alertmanager → Telegram
 
-**Dashboard temperature thresholds (Grafana panel config, not Prometheus alert rules) — recalibrated from real data, not assumptions:**
+**Channel:** Telegram Bot, via Alertmanager's native `telegram_configs` receiver (no separate webhook bridge needed — supported directly since Alertmanager v0.24).
+
+**Config split across two files:**
+- `alertmanager/alertmanager.yml.template` — committed to git, routing/grouping/inhibition logic, with `__TELEGRAM_BOT_TOKEN__` / `__TELEGRAM_CHAT_ID__` placeholders instead of real secrets
+- `.env` (gitignored) — `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID`, substituted into the template by `sed` in the container's entrypoint at startup (Alertmanager's config format has no built-in `${VAR}` expansion the way `docker-compose.yml` does — see §14 #23)
+
+**Routing:** grouped by `alertname`, `group_wait: 10s`, `repeat_interval: 4h` (1h for `severity="critical"`). An inhibit rule suppresses `ContainerCrashLooping`/`ContainerRestartedRecently` while `DockerStatusExporterStale` is firing, since both would just be reading garbage data from the same root cause.
+
+**Setup prerequisite:** bot created via @BotFather (`TELEGRAM_BOT_TOKEN`); chat ID obtained by messaging the bot once (`/start`) and reading it back from `https://api.telegram.org/bot<token>/getUpdates` — simpler and more reliable than a third-party "get my chat ID" bot, since it comes straight from the source of truth.
+
+**Dashboard temperature/fan thresholds (Grafana panel config, separate from the Prometheus alert rules above — visual-only, no notification tied to these) — recalibrated from real data, not assumptions:**
 
 | Metric | Warning | Critical | Note |
 |---|---|---|---|
 | CPU Package Temp | 70°C (avg) / 75°C (max) | 90°C (avg) / 95°C (max) | |
 | GPU Temp | 65°C (avg) | 85°C (avg) | |
-| CPU Fan RPM | 5000 RPM | 6500 RPM | Recalibrated — the initial default values (3000/4000) turned out to be well below this machine's normal operating range (~5100-5600 RPM at idle-to-moderate load) |
-| Disk usage (/) | 85% | 95% | No Prometheus alert rule for this yet — still planned |
-| RAM usage | 90% | — | No Prometheus alert rule for this yet — still planned |
+| CPU Fan RPM | 5600 RPM | 5900 RPM | Recalibrated twice — see §14 #21 for why 5300 (an unverified "spec max") was itself wrong |
+| GPU Fan RPM | 5100 RPM | 5400 RPM | Same recalibration, see §14 #21 |
+| Disk usage (/) | 85% | 95% | Also has a real Prometheus alert rule now (`DiskSpaceWarning`/`DiskSpaceCritical`, table above) |
+| RAM usage | 90% | — | Also has a real Prometheus alert rule now (`MemoryHigh`, table above) |
 
 ## 9. Security
 
@@ -215,6 +237,10 @@ homelab-observability/
 │                                     #   Prometheus; a Grafana-side transform
 │                                     #   bug (§14 #22) slipped past it, since
 │                                     #   it only checks raw query output
+├── alertmanager/
+│   └── alertmanager.yml.template    # routing + Telegram receiver; secrets are
+│                                     #   __PLACEHOLDER__ tokens, not real values
+│                                     #   (see §14 #23 for why not ${VAR} syntax)
 ├── systemd/
 │   ├── docker-status.service        # systemd unit that runs docker-status.sh
 │   ├── docker-status.timer          # triggers every 5 seconds
@@ -226,9 +252,8 @@ homelab-observability/
         ├── datasources/             # Prometheus auto-provisioning
         └── dashboards/              # provider config
 
-Not yet present (Phase 2/3/4):
+Not yet present (Phase 2/4):
 ├── prometheus/rules/recording-rules.yml   # hourly/daily downsampling
-├── alertmanager/alertmanager.yml          # routing to Telegram
 ├── loki/loki-config.yml
 └── promtail/promtail-config.yml
 ```
@@ -237,14 +262,14 @@ Not yet present (Phase 2/3/4):
 
 1. **Phase 1 — Core metrics:** ✅ **Done.** Prometheus + node_exporter + nvidia_gpu_exporter + cAdvisor + Grafana, all bound to the Tailscale IP, resource limits in place and re-tuned based on real incidents (see §9). Hardened in a dedicated audit pass (§14 #13-#19): reliable boot recovery, a hard TSDB size cap, container healthchecks, pinned datasource uid, and every panel query re-validated against `sensors`/`df`/`free`/`docker` as ground truth.
 2. **Phase 2 — Downsampling:** ❌ **Not started.** Recording rules for hourly/daily aggregates haven't been created.
-3. **Phase 3 — Alerting:** 🟡 **Partial.** Prometheus alert rules (`ContainerCrashLooping`, etc.) are live and have been validated against real incidents. Alertmanager + Telegram Bot integration hasn't been built.
+3. **Phase 3 — Alerting:** ✅ **Done.** 12 Prometheus alert rules, live Alertmanager routing to Telegram via its native `telegram_configs` receiver, validated end-to-end with a real firing alert (not a synthetic test) during setup. See §8 and §14 #23-#24 for the two config-substitution bugs found and fixed along the way.
 4. **Phase 4 — Logs:** ❌ **Not started.** Loki + Promtail aren't part of the stack yet.
 5. **Phase 5 — Custom dashboard & polish:** ✅ **Done** (ahead of schedule — worked on in parallel with Phase 1 due to the need for repeated validation). 26 custom panels grouped into a Maintenance Log plus 4 row sections (CPU, GPU, System & Storage, Containers — CPU and GPU deliberately kept in fully separate sections, each with its own temp stats, usage, and fan RPM), every query manually validated against Prometheus, several bugs found & fixed along the way (wrong RPM unit, threshold styling not rendering on the graph, duplicate legend rows from an instance-label change).
 6. **Phase 6 — Portfolio documentation:** 🟡 **In progress.** This PRD + README.md.
 
 ## 12. Open Items / User Confirmation Needed
 
-- [ ] `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` (from @BotFather) — prerequisite for Phase 3
+- [x] ~~`TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` (from @BotFather)~~ — obtained and live in `.env` (gitignored); Alertmanager delivers to Telegram successfully
 - [x] ~~Final ports for each service~~ — finalized: Prometheus `9099`, Grafana `3033`, cAdvisor `8081` (moved from 8080 due to a conflict with another project)
 - [x] ~~Final scrape interval~~ — finalized: **5 seconds** (scrape, evaluation, dashboard refresh, and textfile collector timer — all consistent at the same interval)
 - [x] ~~Alert threshold confirmation~~ — recalibrated from real data (see §8)
@@ -255,7 +280,7 @@ Not yet present (Phase 2/3/4):
 
 - Stack runs stably 24/7 without disrupting the existing AI workload (overhead <5% CPU, <1GB additional RAM). ✅ Measured during the production-readiness audit: all 5 containers combined at ~1.8% of one core (≈0.15% of the host's 12 threads) and ~424MB RAM — well under target. Not yet measured over a multi-week window.
 - Dashboard accessible from another device via Tailscale, showing real-time + historical data. ✅ Validated.
-- Telegram alert successfully delivered when a threshold is breached. ❌ Not yet testable — Alertmanager doesn't exist yet. The underlying Prometheus alert rules **have** already been proven against real incidents (see §14) — 12 rules total, covering container health, host resources, and self-monitoring.
+- Telegram alert successfully delivered when a threshold is breached. ✅ Validated — and not with a synthetic test: `ContainerCrashLooping` genuinely fired on `obs-alertmanager` itself (from repeated `--force-recreate` during setup) and the Telegram notification arrived. 12 alert rules total, covering container health, host resources, and self-monitoring.
 - Repo on GitHub: clear README, diagram present, custom dashboard present, no secrets committed. ✅ Validated — public at github.com/rozi-bb/homelab-observability.
 - Real historical data (not mocked) available for at least a few days before being used as a portfolio piece. ✅ Data on hand back to August 19, 2026, with visible gaps from two host reboots — an honest gap (§14 #13) is arguably more useful portfolio material than an unbroken line would have been.
 
@@ -287,3 +312,5 @@ This section is deliberately kept as evidence of a genuine engineering process �
 | 20 | Changing `GF_SECURITY_ADMIN_PASSWORD` in `.env` and restarting did nothing — old and new password both rejected | `GF_SECURITY_ADMIN_PASSWORD` is only read on first-ever database initialization; Grafana silently ignores it afterward. The env change did nothing, and the resulting repeated failed logins (old password, which the DB still had, tried against a UI that had just been told to expect the new one) tripped Grafana's brute-force lockout, which then rejected the *correct* password too | `docker exec obs-grafana grafana cli admin reset-admin-password '<pw>'` resets it directly in the DB; the `login_attempt` table had to be cleared by hand (via a `docker cp` round-trip) to lift the lockout, then the copied-back file needed `chown 472:472` since `docker cp` restores it as root and the Grafana process can't open a db file it doesn't own — documented in [README](README.md#changing-the-grafana-admin-password) so this doesn't get rediscovered the hard way twice |
 | 21 | CPU Fan RPM threshold (5300, user-supplied as "the hardware's rated max") sat below the sensor's *actual* sustained reading — sensor showed 100% of a 6h window above 5300, 15-day average 5420 RPM | No official ASUS spec publishes a max RPM for this fan; the closest reference found (aftermarket exact-fit replacement parts for this model) cites ~5000 RPM, itself below the observed 5600 RPM peak. A fan physically cannot exceed its true mechanical max, so a threshold it exceeds constantly cannot have been that max — it was an unverified estimate treated as a spec | Recalibrated both fan thresholds from 15 days of `max_over_time`/`avg_over_time` data instead of an external number: CPU green/yellow/red at (—/5600/5900), GPU at (—/5100/5400). CPU Package temp was 56°C at the time despite the fan running near its ceiling — the cooling is working as designed, this was a threshold-calibration issue, not a hardware fault |
 | 22 | A new "RAM by Project/Stack" bar gauge (grouped by the `container_label_com_docker_compose_project` label cAdvisor already exposes) rendered its bars in random order despite a Reduce + Sort by transform pair being saved correctly in the dashboard JSON | Grafana's "Sort by" transform matched on a field name ("Last") assumed to be what the "Reduce" transform's `lastNotNull` calculator outputs — it wasn't, or didn't match closely enough, and the mismatch failed silently: no error, the transform pipeline just did nothing. Confirmed via a screenshot from the user, not something the query validator would ever catch, since it only checks raw Prometheus output before any Grafana-side transform runs | Replaced both transforms with `sort_desc()` wrapped around the whole PromQL expression, so Prometheus returns the series pre-sorted and no Grafana transform is involved at all. Verified through the exact request Grafana's frontend makes (`POST /api/ds/query` with a real time range), not just a raw Prometheus query, to rule out the same class of silent mismatch recurring |
+| 23 | Alertmanager's config format has no equivalent of docker-compose's `${VAR}` substitution — writing `bot_token: "${TELEGRAM_BOT_TOKEN}"` directly into `alertmanager.yml` would either fail to parse or, worse, get committed to git with the literal string `${TELEGRAM_BOT_TOKEN}` instead of ever being resolved | Alertmanager reads its config as static YAML; it has no templating engine, and the container image has no `envsubst` (confirmed by checking `/usr/bin` inside it) | Split into `alertmanager.yml.template` (committed, with `__TELEGRAM_BOT_TOKEN__`/`__TELEGRAM_CHAT_ID__` placeholders) and a `sed`-based substitution in the container's entrypoint that renders the real config into `/tmp` at startup. The secrets are passed in as env vars and referenced with `$$` in `docker-compose.yml` (escaping them from *docker-compose's own* `${VAR}` substitution, which happens once at `docker compose up` time and would otherwise bake the plaintext token into `docker compose config` output) so they're resolved by the container's shell at runtime instead — verified by inspecting the rendered `/tmp/alertmanager.yml` inside the running container with dummy values before ever touching the real token |
+| 24 | Alertmanager crash-looped on startup: `listen tcp 100.77.191.60:9093: bind: cannot assign requested address` | Copied the `--web.listen-address=${TAILSCALE_IP}:...` pattern from `node_exporter` without also copying the reason it's there: `node_exporter` uses `network_mode: host`, so that IP genuinely exists inside its network namespace. Alertmanager is on the regular `observability` bridge network like Prometheus/Grafana/cAdvisor — the Tailscale IP doesn't exist inside its namespace, so binding to it directly fails | Removed the flag entirely. Bridge-network services in this stack listen on their container-internal default (effectively `0.0.0.0` inside the container) and rely purely on the `ports: "${TAILSCALE_IP}:9093:9093"` mapping for the Tailscale-only restriction on the host side — the same pattern already used by Prometheus, Grafana, and cAdvisor, which this service should have matched from the start |

@@ -59,6 +59,13 @@ Full details (storage, cooling, existing workload) are in [PRD.md §2](PRD.md#2-
 │ temp/fan/   │ │util of │ │CPU/RAM/ │ │ catches crash-loops│
 │ load avg    │ │the GPU │ │network  │ │ that dodge scrapes │
 └─────────────┘ └────────┘ └─────────┘ └────────────────────┘
+
+      │ alert fires
+      ▼
+┌─────────────┐      ┌──────────┐
+│ Alertmanager │ ───▶ │ Telegram │
+│    :9093     │      │   Bot    │
+└─────────────┘      └──────────┘
 ```
 
 Full diagram and rationale for each component: [PRD.md §5](PRD.md#5-architecture--components-current-state).
@@ -71,7 +78,7 @@ Full diagram and rationale for each component: [PRD.md §5](PRD.md#5-architectur
 | Custom dashboard (26 panels, not imported) | ✅ Done |
 | Production-readiness audit | ✅ Done — 12 alert rules, reliable boot recovery, resource limits verified against real usage, a repeatable query validator |
 | Downsampling / recording rules | ❌ Not started |
-| Alertmanager → Telegram | 🟡 Prometheus-side alert rules are live and have already caught real incidents; Telegram routing not built yet |
+| Alertmanager → Telegram | ✅ Done — 12 alert rules routed and delivered live, validated with a genuine firing alert (not a synthetic test) |
 | Logs (Loki + Promtail) | ❌ Not started |
 
 Measured overhead on the host: ~1.8% of one CPU core combined across all 5
@@ -93,7 +100,18 @@ Edit `.env` with, at minimum:
 TAILSCALE_IP=<your-machine's-tailnet-ip>
 GF_SECURITY_ADMIN_USER=admin
 GF_SECURITY_ADMIN_PASSWORD=<change-me>
+
+# For Telegram alerting — create a bot via @BotFather for the token, then
+# message it once (/start) and read your chat ID back from
+# https://api.telegram.org/bot<token>/getUpdates
+TELEGRAM_BOT_TOKEN=<your-bot-token>
+TELEGRAM_CHAT_ID=<your-chat-id>
 ```
+
+The Telegram variables are **required** — Alertmanager renders its config
+from them at startup, so the stack won't start without both set. The bot
+token comes from @BotFather; the chat ID is the number you get back from
+`getUpdates` after messaging the bot once.
 
 ```bash
 docker compose up -d

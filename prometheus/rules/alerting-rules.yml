@@ -156,12 +156,12 @@ groups:
       # inside the container), but nothing outside the host can reach it — so
       # the only external signal is the scrape failing.
       - alert: PrometheusTargetsMissing
-        expr: count(up) < 4
+        expr: count(up) < 5
         for: 5m
         labels:
           severity: critical
         annotations:
-          summary: "Only {{ $value }} of 4 scrape targets are registered"
+          summary: "Only {{ $value }} of 5 scrape targets are registered"
           description: >-
             A scrape target has disappeared from Prometheus' config rather than
             merely failing. Check `docker compose ps` and the boot-up unit
