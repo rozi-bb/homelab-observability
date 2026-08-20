@@ -2,7 +2,7 @@
   "title": "Server Overview",
   "uid": "server-overview",
   "schemaVersion": 42,
-  "version": 75,
+  "version": 77,
   "refresh": "5s",
   "time": {
     "from": "now-6h",
@@ -2098,6 +2098,67 @@
       ],
       "title": "Per-Container CPU Usage",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "homelab-prometheus"
+      },
+      "description": "RAM summed per docker-compose project (the container_label_com_docker_compose_project label cAdvisor already exposes), not per individual container. Containers without a compose project label are grouped under '(no compose project)'.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "neutral": 0
+          },
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 79
+      },
+      "id": 29,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "text"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          },
+          "expr": "sum by (project) (label_replace(label_replace(container_memory_usage_bytes{name!=\"\"}, \"project\", \"$1\", \"container_label_com_docker_compose_project\", \"(.+)\"), \"project\", \"(no compose project)\", \"project\", \"^$\"))",
+          "instant": true,
+          "legendFormat": "{{project}}",
+          "refId": "A"
+        }
+      ],
+      "title": "RAM by Project/Stack",
+      "type": "bargauge"
     }
   ]
 }
