@@ -2,7 +2,7 @@
   "title": "Server Overview",
   "uid": "server-overview",
   "schemaVersion": 42,
-  "version": 77,
+  "version": 79,
   "refresh": "5s",
   "time": {
     "from": "now-6h",
@@ -2158,6 +2158,29 @@
         }
       ],
       "title": "RAM by Project/Stack",
+      "transformations": [
+        {
+          "id": "reduce",
+          "options": {
+            "mode": "reduceFields",
+            "reducers": [
+              "lastNotNull"
+            ]
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "desc": true,
+                "field": "Last"
+              }
+            ]
+          }
+        }
+      ],
       "type": "bargauge"
     }
   ]
