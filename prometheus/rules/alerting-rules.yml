@@ -38,7 +38,12 @@ groups:
       # and the two alerts above go blind. node_textfile_mtime_seconds is
       # emitted automatically by node_exporter's textfile collector.
       - alert: DockerStatusExporterStale
-        expr: time() - node_textfile_mtime_seconds{file="docker_status.prom"} > 300
+        # node_exporter labels this with the full in-container path
+        # (/textfile_collector/docker_status.prom), not the bare filename. The
+        # original rule matched on the bare name, so it silently never matched
+        # anything and could never fire — a watchdog that was itself blind.
+        # Matching on the suffix keeps it working if the mount path changes.
+        expr: time() - node_textfile_mtime_seconds{file=~".*/docker_status\\.prom"} > 300
         for: 1m
         labels:
           severity: warning
@@ -48,3 +53,134 @@ groups:
             docker_status.prom hasn't been refreshed in over 5 minutes.
             Check `systemctl status docker-status.timer` on the host —
             container crash-loop alerts are blind until this is fixed.
+
+  - name: host-resources
+    rules:
+      # PRD §8 thresholds. These were specified from the start but never
+      # implemented — until now the only alerting was container-health, so a
+      # full disk or a thermal-throttling CPU would have gone unnoticed.
+      - alert: DiskSpaceWarning
+        expr: |
+          100 * (1 - (node_filesystem_avail_bytes{mountpoint="/"}
+                      / node_filesystem_size_bytes{mountpoint="/"})) > 85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disk / is {{ $value | printf \"%.1f\" }}% full"
+          description: >-
+            Root filesystem is above 85%. Prometheus itself is capped at 5GB
+            (--storage.tsdb.retention.size), so it is unlikely to be the cause;
+            check the Docker image/volume footprint with `docker system df`.
+
+      - alert: DiskSpaceCritical
+        expr: |
+          100 * (1 - (node_filesystem_avail_bytes{mountpoint="/"}
+                      / node_filesystem_size_bytes{mountpoint="/"})) > 95
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disk / is {{ $value | printf \"%.1f\" }}% full — critical"
+          description: >-
+            Root filesystem is above 95%. Container writes will start failing;
+            free space now (`docker system prune`, check large logs/volumes).
+
+      - alert: MemoryHigh
+        expr: |
+          100 * (1 - (node_memory_MemAvailable_bytes
+                      / node_memory_MemTotal_bytes)) > 90
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "RAM usage is {{ $value | printf \"%.1f\" }}%"
+          description: >-
+            Available memory is under 10%. With ~60 containers on this host the
+            OOM killer will start picking victims; check `docker stats`.
+
+      # Package id 0 (sensor temp1) is the sensor the BIOS/OS actually uses for
+      # throttling decisions — deliberately not an average across cores, which
+      # would mask a single hot core. See PRD.md §6.
+      - alert: CpuTemperatureWarning
+        expr: node_hwmon_temp_celsius{chip=~".*coretemp.*", sensor="temp1"} > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CPU package temp sustained at {{ $value | printf \"%.0f\" }}°C"
+          description: >-
+            CPU package has been above 85°C for 5 minutes. Brief spikes to ~95°C
+            are normal on this laptop under load; a sustained level is not.
+
+      - alert: CpuTemperatureCritical
+        expr: node_hwmon_temp_celsius{chip=~".*coretemp.*", sensor="temp1"} > 95
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "CPU package temp sustained at {{ $value | printf \"%.0f\" }}°C — throttling likely"
+          description: >-
+            CPU package above 95°C for 2 minutes; hardware throttle point is
+            100°C. Check airflow and what is loading the CPU.
+
+      - alert: GpuTemperatureWarning
+        expr: nvidia_smi_temperature_gpu > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "GPU temp sustained at {{ $value | printf \"%.0f\" }}°C"
+          description: "GPU has been above 85°C for 5 minutes."
+
+  - name: stack-self-monitoring
+    rules:
+      # Without this, the stack can go blind silently: an exporter that stops
+      # answering just leaves flat-lining graphs, which reads as "nothing is
+      # happening" rather than "we stopped looking".
+      - alert: ExporterDown
+        expr: up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Scrape target {{ $labels.job }} is down"
+          description: >-
+            Prometheus has been unable to scrape {{ $labels.job }}
+            ({{ $labels.instance }}) for 2 minutes. Every panel fed by this
+            target is now stale.
+
+      # Catches the failure mode documented in scripts/boot-up.sh: after a host
+      # reboot dockerd can restore a container without re-publishing its ports.
+      # The container reports Up and its healthcheck passes (healthchecks run
+      # inside the container), but nothing outside the host can reach it — so
+      # the only external signal is the scrape failing.
+      - alert: PrometheusTargetsMissing
+        expr: count(up) < 4
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Only {{ $value }} of 4 scrape targets are registered"
+          description: >-
+            A scrape target has disappeared from Prometheus' config rather than
+            merely failing. Check `docker compose ps` and the boot-up unit
+            (`systemctl status homelab-observability`).
+
+      # The observability stack watching everything except itself is how the
+      # Grafana OOM (PRD.md §9) went unnoticed until the dashboard stopped
+      # loading. cAdvisor exposes both usage and the configured limit, so this
+      # is a ratio against whatever the compose file sets — no hardcoded MB.
+      - alert: ObservabilityContainerMemoryHigh
+        expr: |
+          100 * container_memory_usage_bytes{name=~"obs-.*"}
+              / container_spec_memory_limit_bytes{name=~"obs-.*"} > 85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.name }} at {{ $value | printf \"%.0f\" }}% of its memory limit"
+          description: >-
+            An observability container is close to the memory limit set in
+            docker-compose.yml. If it is OOM-killed the stack goes blind —
+            raise the limit or find what is growing.

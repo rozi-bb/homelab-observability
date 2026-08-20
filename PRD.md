@@ -103,6 +103,7 @@ Loki + Promtail (log aggregation)
 | nvidia_gpu_exporter | `utkuozdemir/nvidia_gpu_exporter:latest` | `9835` | Temperature, utilization, memory of the GTX 1050 GPU | ✅ Running (GPU fan speed **not available via this exporter** — the GTX 1050 Mobile doesn't expose that sensor through `nvidia-smi`; GPU fan RPM is tracked separately via `node_exporter`'s hwmon collector instead — see §14 #12) |
 | cAdvisor | `gcr.io/cadvisor/cadvisor:latest` | `8081` (moved from default `8080`, which conflicted with another project's dev stack on the same machine) | Per-container Docker metrics | ✅ Running |
 | `docker-status.sh` (custom) | bash script + systemd timer, not a container | — | Exports `docker inspect` RestartCount/State to node_exporter's textfile collector, refreshed every 5s | ✅ Running |
+| `boot-up.sh` (custom) | bash script + systemd unit, not a container | — | Boot-time convergence: waits for the Tailscale address, runs `docker compose up -d`, then repairs services that came back without their port bindings (see §14 #13) | ✅ Running |
 | Alertmanager | `prom/alertmanager` | — | Alert routing & deduplication → Telegram | ❌ Not built |
 | Loki | `grafana/loki` | — | Log aggregation storage | ❌ Not built |
 | Promtail | `grafana/promtail` | — | Log shipper from all containers to Loki | ❌ Not built |
@@ -150,7 +151,7 @@ The fix: a small script running on the **host** (not inside an observability con
 
 ## 8. Alerting
 
-**Status: Prometheus-native alert rules are live and actively evaluated. Routing to Telegram (Alertmanager) has not been built** — alerts currently only show up as "firing" in the Prometheus UI, with no outbound notification yet.
+**Status: 11 Prometheus-native alert rules are live and actively evaluated. Routing to Telegram (Alertmanager) has not been built** — alerts currently only show up as "firing" in the Prometheus UI, with no outbound notification yet.
 
 ### Alert rules currently running (`prometheus/rules/alerting-rules.yml`)
 
@@ -158,7 +159,13 @@ The fix: a small script running on the **host** (not inside an observability con
 |---|---|---|---|
 | `ContainerCrashLooping` | `increase(docker_container_restart_count[15m]) > 2`, for 2m | critical | `docker-status.sh` (not cAdvisor — see §5) |
 | `ContainerRestartedRecently` | `increase(docker_container_restart_count[15m]) > 0` | warning | `docker-status.sh` |
-| `DockerStatusExporterStale` | `time() - node_textfile_mtime_seconds{file="docker_status.prom"} > 300`, for 1m | warning | Self-monitoring — if the textfile exporter dies, the two alerts above go blind |
+| `DockerStatusExporterStale` | `time() - node_textfile_mtime_seconds{file=~".*/docker_status\.prom"} > 300`, for 1m | warning | Self-monitoring — if the textfile exporter dies, the two alerts above go blind |
+| `DiskSpaceWarning` / `DiskSpaceCritical` | root filesystem > 85% (for 10m) / > 95% (for 5m) | warning / critical | node_exporter |
+| `MemoryHigh` | RAM used > 90%, for 10m | warning | node_exporter |
+| `CpuTemperatureWarning` / `CpuTemperatureCritical` | CPU Package > 85°C (for 5m) / > 95°C (for 2m) | warning / critical | node_exporter hwmon — Package sensor specifically, not a core average (§6) |
+| `GpuTemperatureWarning` | GPU > 85°C, for 5m | warning | nvidia_gpu_exporter |
+| `ExporterDown` | `up == 0`, for 2m | critical | Prometheus itself — without this a dead exporter just looks like flat graphs |
+| `PrometheusTargetsMissing` | `count(up) < 4`, for 5m | critical | Catches the reboot failure mode in §14 #13, where a container is Up and passing its healthcheck but unreachable from outside the host |
 
 These three alerts have been **validated against real incidents** during development (see §14) — not untested placeholder alerts.
 
@@ -198,9 +205,12 @@ homelab-observability/
 ├── node-exporter-textfile/
 │   └── docker-status.sh             # custom crash-loop exporter (committed;
 │                                     #   its *.prom output is gitignored)
+├── scripts/
+│   └── boot-up.sh                   # boot convergence + port-binding repair
 ├── systemd/
 │   ├── docker-status.service        # systemd unit that runs docker-status.sh
-│   └── docker-status.timer          # triggers every 5 seconds
+│   ├── docker-status.timer          # triggers every 5 seconds
+│   └── homelab-observability.service # runs boot-up.sh at boot
 └── grafana/
     ├── dashboards/
     │   └── overview.json            # 25 custom panels, built from scratch
@@ -217,7 +227,7 @@ Not yet present (Phase 2/3/4):
 
 ## 11. Implementation Phases — Status
 
-1. **Phase 1 — Core metrics:** ✅ **Done.** Prometheus + node_exporter + nvidia_gpu_exporter + cAdvisor + Grafana, all bound to the Tailscale IP, resource limits in place and re-tuned based on real incidents (see §9).
+1. **Phase 1 — Core metrics:** ✅ **Done.** Prometheus + node_exporter + nvidia_gpu_exporter + cAdvisor + Grafana, all bound to the Tailscale IP, resource limits in place and re-tuned based on real incidents (see §9). Hardened in a dedicated audit pass (§14 #13-#19): reliable boot recovery, a hard TSDB size cap, container healthchecks, pinned datasource uid, and every panel query re-validated against `sensors`/`df`/`free`/`docker` as ground truth.
 2. **Phase 2 — Downsampling:** ❌ **Not started.** Recording rules for hourly/daily aggregates haven't been created.
 3. **Phase 3 — Alerting:** 🟡 **Partial.** Prometheus alert rules (`ContainerCrashLooping`, etc.) are live and have been validated against real incidents. Alertmanager + Telegram Bot integration hasn't been built.
 4. **Phase 4 — Logs:** ❌ **Not started.** Loki + Promtail aren't part of the stack yet.
@@ -259,3 +269,10 @@ This section is deliberately kept as evidence of a genuine engineering process �
 | 10 | Threshold colors defined on the CPU Fan RPM panel weren't rendering as a line on the graph | `custom.thresholdsStyle.mode` wasn't set (Grafana default: `off`) | Added `thresholdsStyle: {mode: "line"}` |
 | 11 | Network Throughput panel showed suspiciously tiny values (hundreds of B/s) that never reflected real WiFi/Tailscale activity | `node_exporter` ran on the regular Docker bridge network, not `network_mode: host`. `/proc/net/dev` reflects the *reading process's own* network namespace regardless of how `/proc` is mounted, so node_exporter was only ever reporting its own virtual interface into the Docker bridge — never the host's real `wlo1`/`tailscale0` | Switched `node_exporter` to `network_mode: host` with an explicit `--web.listen-address=${TAILSCALE_IP}:9100` (since `ports:` is ignored under host networking, this flag is what keeps it off `0.0.0.0`); updated the Prometheus scrape target from the Docker DNS name to the literal Tailscale IP, since the container is no longer on the `observability` bridge network |
 | 12 | GPU Fan Speed panel had been removed entirely (incident #6) on the assumption fan RPM wasn't available for this GPU at all | `nvidia-smi` genuinely doesn't expose it, but that's not the only source: `node_exporter`'s hwmon collector already picks up `fan1`/`fan2` from the `asus-isa-0000` sensor (the laptop's embedded controller, not the GPU itself) — `sensors asus-isa-0000` confirmed `cpu_fan` and `gpu_fan` are both read this way | Split the existing "CPU Fan RPM" panel (which had silently been graphing both fans together) into two: CPU Fan RPM (`fan1`) and a new GPU Fan RPM (`fan2`), with separate thresholds recalibrated to this machine's real values (5300 RPM / 4800 RPM) |
+| 13 | **Stack came back from a host reboot unreachable.** `docker ps` showed every container Up with RestartCount 0, healthchecks passed, yet nothing outside the host could connect | dockerd restored the `restart: unless-stopped` containers but silently failed to re-publish their ports — `HostConfig.PortBindings` had the mapping, `NetworkSettings.Ports` was `{}`, and dockerd logged `error locating sandbox id ... not found`. Docker never treats this as a failure, so `unless-stopped` never fires; `docker compose up -d` does not repair it either, because the config hash is unchanged so compose reports the container up to date. Observed on two consecutive reboots (2026-08-19, 2026-08-20) — it is systematic, not a fluke | Added `scripts/boot-up.sh` + a `homelab-observability.service` systemd unit: waits for the Tailscale address to actually exist (ports bind to it explicitly), converges with `docker compose up -d`, then compares wanted vs. published bindings and force-recreates only the services that came back broken |
+| 14 | Prometheus had a 15-day time retention but no size cap, on a host disk sitting at 94% | `--storage.tsdb.retention.time` bounds *age*, not *bytes*. A cardinality spike (this stack already had one: ~9k → ~127k series in hours, §7) turns "15 days of data" into an unbounded number of bytes. Prometheus filling the disk would have taken all ~60 containers on the host down with it | Added `--storage.tsdb.retention.size=5GB` as a hard second bound (current usage: ~190MB) |
+| 15 | `DockerStatusExporterStale` could never fire — a watchdog that was itself blind | The rule matched `node_textfile_mtime_seconds{file="docker_status.prom"}`, but node_exporter labels that metric with the full in-container path, `file="/textfile_collector/docker_status.prom"`. The selector matched nothing, so the alert sat permanently inactive and would never have reported the crash-loop detection going dark | Changed the matcher to a suffix regex (`file=~".*/docker_status\.prom"`), which also survives a change of mount path |
+| 16 | `docker-status.sh` burned ~2s of CPU every 5s — roughly 40% of a core, continuously, just to count container restarts | The script ran one `docker inspect` per container: 57 process spawns and 57 daemon round-trips per run, on a host already contended for CPU | Replaced the loop with a single batched `docker inspect $(docker ps -aq)`. Measured 1.72s → 0.17s wall, ~2.0s → ~0.07s CPU — about 25× cheaper for identical output |
+| 17 | The `topk(10, ...)` in "Per-Container CPU Usage" rendered far more than 10 series, many of them broken fragments | `topk` is re-evaluated independently at every step of a range query, so membership of the top-10 changes as containers rise and fall. Measured over a 6h window: 25 series returned, 12 of them partial | Rank once over the whole range instead of per step: `<series> and topk(10, avg_over_time(<series>[$__range:5m]))`. Benchmarked against the alternatives — this returns exactly 10 unbroken series and stays cheap (0.00s at 6h, 0.32s at 24h) |
+| 18 | Every panel relied on "whichever datasource happens to be default", and the provisioned datasource had no fixed `uid` | Grafana assigns a random uid to a datasource provisioned without one, so a `git clone` + `docker compose up` on another machine produces a dashboard whose panels point at a uid that does not exist there — the core reproducibility claim of this repo was untested and would have failed | Pinned `uid: homelab-prometheus` in datasource provisioning and referenced it explicitly on all 20 panels and their targets |
+| 19 | The three CPU Package stat cards (Avg/Min/Max) reported temperatures a few degrees off | They lacked the `instance` filter the matching timeseries panels already had, so their `*_over_time` window spanned both the current series and the stale `node_exporter:9100` series left behind by the `network_mode: host` change (#11). `avg()` then averaged two series of very different lengths as equals. Measured: 68.73°C blended vs. 64.85°C correct | Added the same `instance` filter used by the timeseries panels |

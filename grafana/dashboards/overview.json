@@ -2,7 +2,7 @@
   "title": "Server Overview",
   "uid": "server-overview",
   "schemaVersion": 42,
-  "version": 70,
+  "version": 72,
   "refresh": "5s",
   "time": {
     "from": "now-6h",
@@ -43,7 +43,7 @@
         "x": 0,
         "y": 7
       },
-      "id": 23,
+      "id": 28,
       "title": "\ud83d\udda5\ufe0f CPU",
       "type": "row"
     },
@@ -105,11 +105,19 @@
           "expr": "node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp1\", instance=\"100.77.191.60:9100\"}",
           "instant": true,
           "legendFormat": "current",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         }
       ],
       "title": "CPU Package Temp - Current",
-      "type": "stat"
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "homelab-prometheus"
+      }
     },
     {
       "description": "Average temperature of the 'Package id 0' sensor (not an average across cores) over the dashboard's time range. This is the value the BIOS/OS uses for thermal throttling decisions.",
@@ -166,14 +174,22 @@
       "pluginVersion": "13.1.3",
       "targets": [
         {
-          "expr": "avg(avg_over_time(node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp1\"}[$__range]))",
+          "expr": "avg(avg_over_time(node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp1\", instance=\"100.77.191.60:9100\"}[$__range]))",
           "instant": true,
           "legendFormat": "avg",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         }
       ],
       "title": "CPU Package Temp - Avg",
-      "type": "stat"
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "homelab-prometheus"
+      }
     },
     {
       "description": "Lowest Package temperature recorded over the dashboard's time range.",
@@ -222,14 +238,22 @@
       "pluginVersion": "13.1.3",
       "targets": [
         {
-          "expr": "min(min_over_time(node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp1\"}[$__range]))",
+          "expr": "min(min_over_time(node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp1\", instance=\"100.77.191.60:9100\"}[$__range]))",
           "instant": true,
           "legendFormat": "min",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         }
       ],
       "title": "CPU Package Temp - Min",
-      "type": "stat"
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "homelab-prometheus"
+      }
     },
     {
       "description": "Highest Package temperature recorded over the dashboard's time range.",
@@ -286,14 +310,22 @@
       "pluginVersion": "13.1.3",
       "targets": [
         {
-          "expr": "max(max_over_time(node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp1\"}[$__range]))",
+          "expr": "max(max_over_time(node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp1\", instance=\"100.77.191.60:9100\"}[$__range]))",
           "instant": true,
           "legendFormat": "max",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         }
       ],
       "title": "CPU Package Temp - Max",
-      "type": "stat"
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "homelab-prometheus"
+      }
     },
     {
       "description": "The 'Package id 0' sensor only \u2014 a separate physical sensor from the 6 cores, and the one used by the BIOS/OS for thermal throttling.",
@@ -388,11 +420,19 @@
         {
           "expr": "node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp1\", instance=\"100.77.191.60:9100\"}",
           "legendFormat": "Package id 0",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         }
       ],
       "title": "CPU Package Temp (\u00b0C)",
-      "type": "timeseries"
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "homelab-prometheus"
+      }
     },
     {
       "description": "6 individual core sensors (Core 0-5) \u2014 separate from Package. Useful for seeing which specific core is running hottest.",
@@ -487,36 +527,64 @@
         {
           "expr": "node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp2\", instance=\"100.77.191.60:9100\"}",
           "legendFormat": "Core 0",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         },
         {
           "expr": "node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp3\", instance=\"100.77.191.60:9100\"}",
           "legendFormat": "Core 1",
-          "refId": "B"
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         },
         {
           "expr": "node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp4\", instance=\"100.77.191.60:9100\"}",
           "legendFormat": "Core 2",
-          "refId": "C"
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         },
         {
           "expr": "node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp5\", instance=\"100.77.191.60:9100\"}",
           "legendFormat": "Core 3",
-          "refId": "D"
+          "refId": "D",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         },
         {
           "expr": "node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp6\", instance=\"100.77.191.60:9100\"}",
           "legendFormat": "Core 4",
-          "refId": "E"
+          "refId": "E",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         },
         {
           "expr": "node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp7\", instance=\"100.77.191.60:9100\"}",
           "legendFormat": "Core 5",
-          "refId": "F"
+          "refId": "F",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         }
       ],
       "title": "CPU Per-Core Temp (\u00b0C)",
-      "type": "timeseries"
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "homelab-prometheus"
+      }
     },
     {
       "fieldConfig": {
@@ -607,11 +675,19 @@
         {
           "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\", instance=\"100.77.191.60:9100\"}[5m])) * 100)",
           "legendFormat": "CPU busy %",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         }
       ],
       "title": "CPU Usage (%)",
-      "type": "timeseries"
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "homelab-prometheus"
+      }
     },
     {
       "description": "Number of processes queued waiting for resources (CPU/disk/network), NOT a CPU percentage. This machine has 12 logical threads \u2014 the dashed red line at 12 marks the point where it's 'full' and processes start queuing.",
@@ -705,21 +781,37 @@
         {
           "expr": "node_load1{instance=\"100.77.191.60:9100\"}",
           "legendFormat": "1 min",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         },
         {
           "expr": "node_load5{instance=\"100.77.191.60:9100\"}",
           "legendFormat": "5 min",
-          "refId": "B"
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         },
         {
           "expr": "node_load15{instance=\"100.77.191.60:9100\"}",
           "legendFormat": "15 min",
-          "refId": "C"
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         }
       ],
       "title": "Load Average",
-      "type": "timeseries"
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "homelab-prometheus"
+      }
     },
     {
       "description": "CPU fan RPM (sensor 'fan1' on the ASUS embedded controller, asus-isa-0000 \u2014 not from nvidia-smi).",
@@ -767,7 +859,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -814,11 +906,19 @@
         {
           "expr": "node_hwmon_fan_rpm{chip=~\".*asus.*\", sensor=\"fan1\", instance=\"100.77.191.60:9100\"}",
           "legendFormat": "CPU fan",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         }
       ],
       "title": "CPU Fan RPM",
-      "type": "timeseries"
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "homelab-prometheus"
+      }
     },
     {
       "collapsed": false,
@@ -828,7 +928,7 @@
         "x": 0,
         "y": 38
       },
-      "id": 24,
+      "id": 29,
       "title": "\ud83c\udfae GPU",
       "type": "row"
     },
@@ -890,11 +990,19 @@
           "expr": "nvidia_smi_temperature_gpu",
           "instant": true,
           "legendFormat": "current",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         }
       ],
       "title": "GPU Temp - Current",
-      "type": "stat"
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "homelab-prometheus"
+      }
     },
     {
       "description": "Average GPU temperature over the dashboard's time range (not an instant snapshot).",
@@ -954,11 +1062,19 @@
           "expr": "avg(avg_over_time(nvidia_smi_temperature_gpu[$__range]))",
           "instant": true,
           "legendFormat": "avg",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         }
       ],
       "title": "GPU Temp - Avg",
-      "type": "stat"
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "homelab-prometheus"
+      }
     },
     {
       "description": "Lowest GPU temperature recorded over the dashboard's time range.",
@@ -1010,11 +1126,19 @@
           "expr": "min(min_over_time(nvidia_smi_temperature_gpu[$__range]))",
           "instant": true,
           "legendFormat": "min",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         }
       ],
       "title": "GPU Temp - Min",
-      "type": "stat"
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "homelab-prometheus"
+      }
     },
     {
       "description": "Highest GPU temperature recorded over the dashboard's time range.",
@@ -1074,11 +1198,19 @@
           "expr": "max(max_over_time(nvidia_smi_temperature_gpu[$__range]))",
           "instant": true,
           "legendFormat": "max",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         }
       ],
       "title": "GPU Temp - Max",
-      "type": "stat"
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "homelab-prometheus"
+      }
     },
     {
       "fieldConfig": {
@@ -1172,11 +1304,19 @@
         {
           "expr": "nvidia_smi_temperature_gpu",
           "legendFormat": "GPU temp",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         }
       ],
       "title": "GPU Temp (\u00b0C)",
-      "type": "timeseries"
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "homelab-prometheus"
+      }
     },
     {
       "fieldConfig": {
@@ -1267,21 +1407,56 @@
         {
           "expr": "nvidia_smi_utilization_gpu_ratio * 100",
           "legendFormat": "GPU util %",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         }
       ],
       "title": "GPU Utilization (%)",
-      "type": "timeseries"
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "homelab-prometheus"
+      }
     },
     {
       "description": "GPU fan RPM (sensor 'fan2' on the ASUS embedded controller, asus-isa-0000 \u2014 not from nvidia-smi, which doesn't expose this on this GPU).",
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
             },
             "thresholdsStyle": {
               "mode": "line"
@@ -1292,7 +1467,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -1301,8 +1476,7 @@
             ]
           },
           "unit": "rotrpm"
-        },
-        "overrides": []
+        }
       },
       "gridPos": {
         "h": 8,
@@ -1312,6 +1486,10 @@
       },
       "id": 27,
       "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
         "legend": {
           "calcs": [
             "min",
@@ -1320,21 +1498,35 @@
             "last"
           ],
           "displayMode": "table",
-          "placement": "bottom"
+          "enableFacetedFilter": false,
+          "overflow": "ellipsis",
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
-          "mode": "multi"
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
         }
       },
+      "pluginVersion": "13.1.3",
       "targets": [
         {
           "expr": "node_hwmon_fan_rpm{chip=~\".*asus.*\", sensor=\"fan2\", instance=\"100.77.191.60:9100\"}",
           "legendFormat": "GPU fan",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         }
       ],
       "title": "GPU Fan RPM",
-      "type": "timeseries"
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "homelab-prometheus"
+      }
     },
     {
       "collapsed": false,
@@ -1344,7 +1536,7 @@
         "x": 0,
         "y": 61
       },
-      "id": 25,
+      "id": 30,
       "title": "\ud83d\udcca System & Storage",
       "type": "row"
     },
@@ -1500,21 +1692,37 @@
         {
           "expr": "100 * (1 - (node_memory_MemAvailable_bytes{instance=\"100.77.191.60:9100\"} / node_memory_MemTotal_bytes{instance=\"100.77.191.60:9100\"}))",
           "legendFormat": "RAM used %",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         },
         {
           "expr": "node_memory_MemTotal_bytes{instance=\"100.77.191.60:9100\"} - node_memory_MemAvailable_bytes{instance=\"100.77.191.60:9100\"}",
           "legendFormat": "RAM used (GB)",
-          "refId": "B"
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         },
         {
           "expr": "node_memory_MemTotal_bytes{instance=\"100.77.191.60:9100\"}",
           "legendFormat": "RAM total (GB)",
-          "refId": "C"
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         }
       ],
       "title": "RAM Usage",
-      "type": "timeseries"
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "homelab-prometheus"
+      }
     },
     {
       "description": "Left axis: disk used as a percentage. Right axis: absolute disk used vs. free space, in GB, on the root (/) partition.",
@@ -1668,21 +1876,37 @@
         {
           "expr": "100 * (1 - (node_filesystem_avail_bytes{mountpoint=\"/\", instance=\"100.77.191.60:9100\"} / node_filesystem_size_bytes{mountpoint=\"/\", instance=\"100.77.191.60:9100\"}))",
           "legendFormat": "Disk used %",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         },
         {
           "expr": "node_filesystem_size_bytes{mountpoint=\"/\", instance=\"100.77.191.60:9100\"} - node_filesystem_avail_bytes{mountpoint=\"/\", instance=\"100.77.191.60:9100\"}",
           "legendFormat": "Disk used (GB)",
-          "refId": "B"
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         },
         {
           "expr": "node_filesystem_avail_bytes{mountpoint=\"/\", instance=\"100.77.191.60:9100\"}",
           "legendFormat": "Disk free (GB)",
-          "refId": "C"
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         }
       ],
       "title": "Disk Usage - /",
-      "type": "timeseries"
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "homelab-prometheus"
+      }
     },
     {
       "collapsed": false,
@@ -1692,7 +1916,7 @@
         "x": 0,
         "y": 70
       },
-      "id": 26,
+      "id": 31,
       "title": "\ud83d\udc33 Containers",
       "type": "row"
     },
@@ -1748,11 +1972,19 @@
         {
           "expr": "count(count by (name) (container_memory_usage_bytes{name!=\"\"}))",
           "legendFormat": "running",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         }
       ],
       "title": "Running Containers",
-      "type": "stat"
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "homelab-prometheus"
+      }
     },
     {
       "fieldConfig": {
@@ -1842,13 +2074,22 @@
       "pluginVersion": "13.1.3",
       "targets": [
         {
-          "expr": "topk(10, sum by (name) (rate(container_cpu_usage_seconds_total{name!=\"\"}[5m])) * 100)",
+          "expr": "sum by (name) (rate(container_cpu_usage_seconds_total{name!=\"\"}[5m])) * 100\n  and\ntopk(10, avg_over_time(sum by (name) (rate(container_cpu_usage_seconds_total{name!=\"\"}[5m]))[$__range:5m] @ end()))",
           "legendFormat": "{{name}}",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          }
         }
       ],
       "title": "Per-Container CPU Usage",
-      "type": "timeseries"
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "homelab-prometheus"
+      },
+      "description": "Top 10 containers by CPU. The top-10 set is resolved once, pinned to the end of the dashboard's time range via the @ end() modifier \u2014 a plain topk() is re-ranked at every step of a range query, so containers drift in and out and the graph fills with broken part-series (measured: 25 series, 12 fragmented, for a topk(10) over 6h)."
     }
   ]
 }

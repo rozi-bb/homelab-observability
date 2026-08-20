@@ -1,6 +1,11 @@
 global:
   scrape_interval: 5s
   evaluation_interval: 5s
+  # Must be < scrape_interval, otherwise Prometheus clamps it and a slow target
+  # can eat the whole interval. cAdvisor is the slow one here (~1.1s for ~60
+  # containers); 4s leaves it real headroom while still failing fast enough
+  # that a hung exporter shows up as a gap instead of stalling the scrape loop.
+  scrape_timeout: 4s
   external_labels:
     stack: "homelab-observability"
 

@@ -1,9 +1,25 @@
 apiVersion: 1
 
+# Remove the auto-generated datasource from before uid pinning, so a machine
+# that ran an older revision of this repo doesn't end up with two Prometheus
+# entries (the dashboard pins `homelab-prometheus` explicitly).
+deleteDatasources:
+  - name: Prometheus
+    orgId: 1
+
 datasources:
   - name: Prometheus
+    # Explicit uid so dashboard panels can pin their datasource instead of
+    # relying on "whichever one happens to be default". Without this, Grafana
+    # assigns a random uid per install and a `git clone` + `docker compose up`
+    # on another machine would render every panel broken.
+    uid: homelab-prometheus
     type: prometheus
     access: proxy
     url: http://prometheus:9090
     isDefault: true
     editable: false
+    jsonData:
+      # Must match prometheus.yml's global scrape_interval so Grafana picks a
+      # sane default $__rate_interval for rate() queries.
+      timeInterval: "5s"

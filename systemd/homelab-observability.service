@@ -1,0 +1,26 @@
+[Unit]
+Description=Homelab Observability stack (docker compose) — boot-time convergence & port-binding repair
+Documentation=https://github.com/rozi-bb/homelab-observability
+# docker.service must be up to talk to the daemon at all; tailscaled must be
+# up because every published port binds to the Tailscale IP specifically.
+# Ordering alone is not sufficient (tailscaled reports "started" before it has
+# assigned the address), so boot-up.sh polls for the address as well.
+After=docker.service tailscaled.service network-online.target
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=rozi
+WorkingDirectory=/home/rozi/claude-code/homelab-observability
+ExecStart=/home/rozi/claude-code/homelab-observability/scripts/boot-up.sh
+# Long enough to cover the 120s IP wait plus image pulls on first run.
+TimeoutStartSec=600
+# If the Tailscale address never shows up, keep retrying rather than giving up
+# for the rest of the uptime.
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

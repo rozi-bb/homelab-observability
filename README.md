@@ -103,12 +103,23 @@ Access Grafana at `http://<TAILSCALE_IP>:3033` (log in with the credentials from
 - Docker + Docker Compose v2
 - NVIDIA Container Toolkit (for `nvidia_gpu_exporter` — skip if there's no NVIDIA GPU)
 - `lm-sensors` installed and configured (`sensors-detect`) on the host (for CPU/fan temperature via `node_exporter`)
-- For container crash-loop detection ([docker-status.sh](node-exporter-textfile/docker-status.sh)): install the systemd timer once, manually —
+- Two systemd units, installed once (both are plain files in [systemd/](systemd/)):
+
   ```bash
-  sudo cp systemd/docker-status.service systemd/docker-status.timer /etc/systemd/system/
+  sudo cp systemd/*.service systemd/*.timer /etc/systemd/system/
   sudo systemctl daemon-reload
-  sudo systemctl enable --now docker-status.timer
+  sudo systemctl enable --now docker-status.timer          # crash-loop detection
+  sudo systemctl enable --now homelab-observability.service # reliable boot recovery
   ```
+
+  `docker-status.timer` feeds [docker-status.sh](node-exporter-textfile/docker-status.sh),
+  which catches containers crash-looping faster than the scrape interval.
+
+  `homelab-observability.service` runs [scripts/boot-up.sh](scripts/boot-up.sh) at
+  boot. **This is not optional if you want the stack back after a reboot.**
+  `restart: unless-stopped` alone is not enough here: dockerd can restore a
+  container without re-publishing its ports, leaving it Up, healthy, and
+  unreachable — see [PRD.md §14 #13](PRD.md#14-incidents--findings-during-development-changelog).
 
 ## Dashboard
 
@@ -131,6 +142,22 @@ A few design decisions that came out of real debugging, not upfront assumptions:
 - **cAdvisor isn't always enough.** A container crash-looping faster than the scrape interval can be entirely invisible to cAdvisor (it's never "up" at the exact moment of a scrape). The fix: a [small script](node-exporter-textfile/docker-status.sh) that reads `docker inspect` directly on the host, independent of Prometheus's scrape cycle.
 - **The `ContainerCrashLooping` alert isn't a toy alert** — it genuinely caught 3 containers crash-looping hundreds of times due to a Docker network-attachment bug in an unrelated project on the same machine, and the fallout (a Prometheus cardinality explosion, elevated CPU load) was traceable through this very dashboard. Full story in [PRD.md §14](PRD.md#14-incidents--findings-during-development-changelog).
 
+- **`restart: unless-stopped` is not a recovery strategy on its own.** After a
+  host reboot this stack came back with every container reporting Up and
+  healthy, and every port unreachable — dockerd had restored the containers but
+  silently dropped their port bindings, which Docker does not consider a
+  failure. A boot-time unit that verifies the bindings actually exist, and
+  repairs the ones that do not, is what makes recovery real. Reproduced on two
+  consecutive reboots before it was fixed.
+- **A watchdog is worth exactly as much as its selector.** The alert meant to
+  warn that crash-loop detection had gone blind was itself matching a label
+  that never existed (bare filename vs. node_exporter's full path), so it could
+  never fire. It only surfaced by querying the metric by hand during an audit.
+- **The monitoring was a meaningful share of the load it was monitoring.** The
+  crash-loop exporter shelled out to `docker inspect` once per container every
+  5 seconds — ~2s of CPU per run, about 40% of a core, continuously. Batching it
+  into a single call made it ~25× cheaper for identical output.
+
 ## Security
 
 - Every port is bound to the Tailscale IP, not `0.0.0.0` — no public internet exposure
@@ -150,7 +177,9 @@ homelab-observability/
 │   └── rules/alerting-rules.yml     # active alert rules
 ├── node-exporter-textfile/
 │   └── docker-status.sh             # custom crash-loop exporter
-├── systemd/                         # unit files for docker-status.sh
+├── scripts/
+│   └── boot-up.sh                   # boot convergence + port-binding repair
+├── systemd/                         # unit files for the two units above
 └── grafana/
     ├── dashboards/overview.json     # 25 panels, built from scratch
     └── provisioning/                # datasource & dashboard auto-provisioning
