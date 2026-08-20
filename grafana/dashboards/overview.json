@@ -2,7 +2,7 @@
   "title": "Server Overview",
   "uid": "server-overview",
   "schemaVersion": 42,
-  "version": 79,
+  "version": 81,
   "refresh": "5s",
   "time": {
     "from": "now-6h",
@@ -2151,36 +2151,13 @@
             "type": "prometheus",
             "uid": "homelab-prometheus"
           },
-          "expr": "sum by (project) (label_replace(label_replace(container_memory_usage_bytes{name!=\"\"}, \"project\", \"$1\", \"container_label_com_docker_compose_project\", \"(.+)\"), \"project\", \"(no compose project)\", \"project\", \"^$\"))",
+          "expr": "sort_desc(sum by (project) (label_replace(label_replace(container_memory_usage_bytes{name!=\"\"}, \"project\", \"$1\", \"container_label_com_docker_compose_project\", \"(.+)\"), \"project\", \"(no compose project)\", \"project\", \"^$\")))",
           "instant": true,
           "legendFormat": "{{project}}",
           "refId": "A"
         }
       ],
       "title": "RAM by Project/Stack",
-      "transformations": [
-        {
-          "id": "reduce",
-          "options": {
-            "mode": "reduceFields",
-            "reducers": [
-              "lastNotNull"
-            ]
-          }
-        },
-        {
-          "id": "sortBy",
-          "options": {
-            "fields": {},
-            "sort": [
-              {
-                "desc": true,
-                "field": "Last"
-              }
-            ]
-          }
-        }
-      ],
       "type": "bargauge"
     }
   ]
