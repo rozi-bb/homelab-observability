@@ -65,7 +65,7 @@ Relevant context for interpreting temperature trends — the baseline shifts aro
 └───────────────────────────┬───────────────────────────────────┘
                              │
                     ┌────────▼────────┐
-                    │     Grafana      │  :3033 (dashboard, 25 custom panels)
+                    │     Grafana      │  :3033 (dashboard, 26 custom panels)
                     │  512M mem limit  │
                     └────────┬────────┘
                              │ queries
@@ -98,7 +98,7 @@ Loki + Promtail (log aggregation)
 | Service | Image | Port (host, Tailscale-only) | Function | Status |
 |---|---|---|---|---|
 | Prometheus | `prom/prometheus:latest` | `9099` | Time-series DB, scraping, alert rule evaluation | ✅ Running |
-| Grafana | `grafana/grafana:latest` | `3033` | Visual dashboard, 25 custom panels | ✅ Running |
+| Grafana | `grafana/grafana:latest` | `3033` | Visual dashboard, 26 custom panels | ✅ Running |
 | node_exporter | `prom/node-exporter:latest` | `9100` | Host metrics: CPU, RAM, disk, network, temperature, fan, load average | ✅ Running |
 | nvidia_gpu_exporter | `utkuozdemir/nvidia_gpu_exporter:latest` | `9835` | Temperature, utilization, memory of the GTX 1050 GPU | ✅ Running (GPU fan speed **not available via this exporter** — the GTX 1050 Mobile doesn't expose that sensor through `nvidia-smi`; GPU fan RPM is tracked separately via `node_exporter`'s hwmon collector instead — see §14 #12) |
 | cAdvisor | `gcr.io/cadvisor/cadvisor:latest` | `8081` (moved from default `8080`, which conflicted with another project's dev stack on the same machine) | Per-container Docker metrics | ✅ Running |
@@ -153,7 +153,7 @@ The 5GB size cap (`--storage.tsdb.retention.size`) was added during the producti
 
 ## 8. Alerting
 
-**Status: 11 Prometheus-native alert rules are live and actively evaluated. Routing to Telegram (Alertmanager) has not been built** — alerts currently only show up as "firing" in the Prometheus UI, with no outbound notification yet.
+**Status: 12 Prometheus-native alert rules are live and actively evaluated. Routing to Telegram (Alertmanager) has not been built** — alerts currently only show up as "firing" in the Prometheus UI, with no outbound notification yet.
 
 ### Alert rules currently running (`prometheus/rules/alerting-rules.yml`)
 
@@ -168,6 +168,7 @@ The 5GB size cap (`--storage.tsdb.retention.size`) was added during the producti
 | `GpuTemperatureWarning` | GPU > 85°C, for 5m | warning | nvidia_gpu_exporter |
 | `ExporterDown` | `up == 0`, for 2m | critical | Prometheus itself — without this a dead exporter just looks like flat graphs |
 | `PrometheusTargetsMissing` | `count(up) < 4`, for 5m | critical | Catches the reboot failure mode in §14 #13, where a container is Up and passing its healthcheck but unreachable from outside the host |
+| `ObservabilityContainerMemoryHigh` | Any `obs-*` container above 85% of its own `docker-compose.yml` memory limit, for 10m | warning | cAdvisor — added after Grafana was found at 99.3% of its limit *during the audit itself* (§14 #19); this stack watching everything except itself is exactly how that OOM went unnoticed the first time |
 
 These three alerts have been **validated against real incidents** during development (see §14) — not untested placeholder alerts.
 
@@ -203,19 +204,24 @@ homelab-observability/
 ├── prometheus/
 │   ├── prometheus.yml               # scrape config, scrape_interval: 5s
 │   └── rules/
-│       └── alerting-rules.yml       # 3 alert rules (container-health + self-monitoring)
+│       └── alerting-rules.yml       # 12 alert rules (container-health, host-
+│                                     #   resources, self-monitoring)
 ├── node-exporter-textfile/
 │   └── docker-status.sh             # custom crash-loop exporter (committed;
 │                                     #   its *.prom output is gitignored)
 ├── scripts/
-│   └── boot-up.sh                   # boot convergence + port-binding repair
+│   ├── boot-up.sh                   # boot convergence + port-binding repair
+│   └── validate-dashboard.py        # re-runs every panel query against a live
+│                                     #   Prometheus; a Grafana-side transform
+│                                     #   bug (§14 #22) slipped past it, since
+│                                     #   it only checks raw query output
 ├── systemd/
 │   ├── docker-status.service        # systemd unit that runs docker-status.sh
 │   ├── docker-status.timer          # triggers every 5 seconds
 │   └── homelab-observability.service # runs boot-up.sh at boot
 └── grafana/
     ├── dashboards/
-    │   └── overview.json            # 25 custom panels, built from scratch
+    │   └── overview.json            # 26 custom panels, built from scratch
     └── provisioning/
         ├── datasources/             # Prometheus auto-provisioning
         └── dashboards/              # provider config
@@ -233,7 +239,7 @@ Not yet present (Phase 2/3/4):
 2. **Phase 2 — Downsampling:** ❌ **Not started.** Recording rules for hourly/daily aggregates haven't been created.
 3. **Phase 3 — Alerting:** 🟡 **Partial.** Prometheus alert rules (`ContainerCrashLooping`, etc.) are live and have been validated against real incidents. Alertmanager + Telegram Bot integration hasn't been built.
 4. **Phase 4 — Logs:** ❌ **Not started.** Loki + Promtail aren't part of the stack yet.
-5. **Phase 5 — Custom dashboard & polish:** ✅ **Done** (ahead of schedule — worked on in parallel with Phase 1 due to the need for repeated validation). 25 custom panels grouped into a Maintenance Log plus 4 row sections (CPU, GPU, System & Storage, Containers — CPU and GPU deliberately kept in fully separate sections, each with its own temp stats, usage, and fan RPM), every query manually validated against Prometheus, several bugs found & fixed along the way (wrong RPM unit, threshold styling not rendering on the graph, duplicate legend rows from an instance-label change).
+5. **Phase 5 — Custom dashboard & polish:** ✅ **Done** (ahead of schedule — worked on in parallel with Phase 1 due to the need for repeated validation). 26 custom panels grouped into a Maintenance Log plus 4 row sections (CPU, GPU, System & Storage, Containers — CPU and GPU deliberately kept in fully separate sections, each with its own temp stats, usage, and fan RPM), every query manually validated against Prometheus, several bugs found & fixed along the way (wrong RPM unit, threshold styling not rendering on the graph, duplicate legend rows from an instance-label change).
 6. **Phase 6 — Portfolio documentation:** 🟡 **In progress.** This PRD + README.md.
 
 ## 12. Open Items / User Confirmation Needed
@@ -280,3 +286,4 @@ This section is deliberately kept as evidence of a genuine engineering process �
 | 19 | The three CPU Package stat cards (Avg/Min/Max) reported temperatures a few degrees off | They lacked the `instance` filter the matching timeseries panels already had, so their `*_over_time` window spanned both the current series and the stale `node_exporter:9100` series left behind by the `network_mode: host` change (#11). `avg()` then averaged two series of very different lengths as equals. Measured: 68.73°C blended vs. 64.85°C correct | Added the same `instance` filter used by the timeseries panels |
 | 20 | Changing `GF_SECURITY_ADMIN_PASSWORD` in `.env` and restarting did nothing — old and new password both rejected | `GF_SECURITY_ADMIN_PASSWORD` is only read on first-ever database initialization; Grafana silently ignores it afterward. The env change did nothing, and the resulting repeated failed logins (old password, which the DB still had, tried against a UI that had just been told to expect the new one) tripped Grafana's brute-force lockout, which then rejected the *correct* password too | `docker exec obs-grafana grafana cli admin reset-admin-password '<pw>'` resets it directly in the DB; the `login_attempt` table had to be cleared by hand (via a `docker cp` round-trip) to lift the lockout, then the copied-back file needed `chown 472:472` since `docker cp` restores it as root and the Grafana process can't open a db file it doesn't own — documented in [README](README.md#changing-the-grafana-admin-password) so this doesn't get rediscovered the hard way twice |
 | 21 | CPU Fan RPM threshold (5300, user-supplied as "the hardware's rated max") sat below the sensor's *actual* sustained reading — sensor showed 100% of a 6h window above 5300, 15-day average 5420 RPM | No official ASUS spec publishes a max RPM for this fan; the closest reference found (aftermarket exact-fit replacement parts for this model) cites ~5000 RPM, itself below the observed 5600 RPM peak. A fan physically cannot exceed its true mechanical max, so a threshold it exceeds constantly cannot have been that max — it was an unverified estimate treated as a spec | Recalibrated both fan thresholds from 15 days of `max_over_time`/`avg_over_time` data instead of an external number: CPU green/yellow/red at (—/5600/5900), GPU at (—/5100/5400). CPU Package temp was 56°C at the time despite the fan running near its ceiling — the cooling is working as designed, this was a threshold-calibration issue, not a hardware fault |
+| 22 | A new "RAM by Project/Stack" bar gauge (grouped by the `container_label_com_docker_compose_project` label cAdvisor already exposes) rendered its bars in random order despite a Reduce + Sort by transform pair being saved correctly in the dashboard JSON | Grafana's "Sort by" transform matched on a field name ("Last") assumed to be what the "Reduce" transform's `lastNotNull` calculator outputs — it wasn't, or didn't match closely enough, and the mismatch failed silently: no error, the transform pipeline just did nothing. Confirmed via a screenshot from the user, not something the query validator would ever catch, since it only checks raw Prometheus output before any Grafana-side transform runs | Replaced both transforms with `sort_desc()` wrapped around the whole PromQL expression, so Prometheus returns the series pre-sorted and no Grafana transform is involved at all. Verified through the exact request Grafana's frontend makes (`POST /api/ds/query` with a real time range), not just a raw Prometheus query, to rule out the same class of silent mismatch recurring |
