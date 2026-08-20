@@ -273,8 +273,8 @@ Not yet present (Phase 2/4):
 - [x] ~~Final ports for each service~~ — finalized: Prometheus `9099`, Grafana `3033`, cAdvisor `8081` (moved from 8080 due to a conflict with another project)
 - [x] ~~Final scrape interval~~ — finalized: **5 seconds** (scrape, evaluation, dashboard refresh, and textfile collector timer — all consistent at the same interval)
 - [x] ~~Alert threshold confirmation~~ — recalibrated from real data (see §8)
-- [ ] Final project name for portfolio branding purposes (repo name, README title)
-- [ ] Decision: continue to Phase 2/3/4 before pushing to GitHub, or push the Phase 1+5 state now as a checkpoint?
+- [x] ~~Final project name for portfolio branding purposes (repo name, README title)~~ — settled: `homelab-observability`, live at github.com/rozi-bb/homelab-observability
+- [x] ~~Decision: continue to Phase 2/3/4 before pushing to GitHub, or push the Phase 1+5 state now as a checkpoint?~~ — resolved in practice: Phase 3 (alerting) was completed and the repo was pushed to GitHub; only Phase 2 (downsampling) and Phase 4 (logs) remain outstanding
 
 ## 13. Success Criteria
 
