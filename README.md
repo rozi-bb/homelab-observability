@@ -234,7 +234,7 @@ homelab-observability/
 ## Roadmap
 
 - [ ] Recording rules for downsampling (15-day raw → 90-day hourly → 2-year daily)
-- [ ] Alertmanager + Telegram Bot integration
+- [x] Alertmanager + Telegram Bot integration
 - [ ] Loki + Promtail for log aggregation
 - [ ] `metric_relabel_configs` on the cAdvisor scrape job to mitigate cardinality explosions (see [PRD.md §7](PRD.md#7-retention--downsampling-strategy))
 
