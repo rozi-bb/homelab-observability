@@ -158,6 +158,25 @@ A few design decisions that came out of real debugging, not upfront assumptions:
   5 seconds — ~2s of CPU per run, about 40% of a core, continuously. Batching it
   into a single call made it ~25× cheaper for identical output.
 
+## Changing the Grafana Admin Password
+
+Editing `GF_SECURITY_ADMIN_PASSWORD` in `.env` and restarting **does nothing**
+once Grafana has started once before — that variable is only read the very
+first time the database is created (in the `grafana-data` volume). After
+that, Grafana ignores it silently, and repeated login attempts with a
+password it doesn't recognize will trip its brute-force lockout, which then
+blocks *even the correct password* for a few minutes.
+
+To actually change it:
+
+```bash
+docker exec obs-grafana grafana cli admin reset-admin-password '<new-password>'
+```
+
+This resets the password directly in the database. Keep `.env` in sync so a
+fresh `docker compose up` (e.g. after wiping the volume) still gets a sane
+password on first boot.
+
 ## Security
 
 - Every port is bound to the Tailscale IP, not `0.0.0.0` — no public internet exposure
