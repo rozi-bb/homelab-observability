@@ -14,11 +14,471 @@
   ],
   "panels": [
     {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 33,
+      "title": "\ud83d\udcca Overview",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "homelab-prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 85
+              },
+              {
+                "color": "red",
+                "value": 95
+              }
+            ]
+          },
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
+      "id": 34,
+      "options": {
+        "calcs": [
+          "lastNotNull"
+        ],
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 10,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto",
+        "text": {
+          "titleSize": 12,
+          "valueSize": 18
+        },
+        "valueMode": "text",
+        "widthRatio": 0.6
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          },
+          "expr": "avg(avg_over_time(node_hwmon_temp_celsius{chip=~\".*coretemp.*\", sensor=\"temp1\", instance=\"100.77.191.60:9100\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "CPU Temp - Avg",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "homelab-prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 85
+              },
+              {
+                "color": "red",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 1
+      },
+      "id": 35,
+      "options": {
+        "calcs": [
+          "lastNotNull"
+        ],
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 10,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto",
+        "text": {
+          "titleSize": 12,
+          "valueSize": 18
+        },
+        "valueMode": "text",
+        "widthRatio": 0.6
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          },
+          "expr": "100 * (1 - (node_memory_MemAvailable_bytes{instance=\"100.77.191.60:9100\"} / node_memory_MemTotal_bytes{instance=\"100.77.191.60:9100\"}))",
+          "instant": true,
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "RAM Usage",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "homelab-prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 85
+              },
+              {
+                "color": "red",
+                "value": 95
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 1
+      },
+      "id": 36,
+      "options": {
+        "calcs": [
+          "lastNotNull"
+        ],
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 10,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto",
+        "text": {
+          "titleSize": 12,
+          "valueSize": 18
+        },
+        "valueMode": "text",
+        "widthRatio": 0.6
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          },
+          "expr": "100 * (1 - (node_filesystem_avail_bytes{mountpoint=\"/\", instance=\"100.77.191.60:9100\"} / node_filesystem_size_bytes{mountpoint=\"/\", instance=\"100.77.191.60:9100\"}))",
+          "instant": true,
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "Disk Usage - /",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "homelab-prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          },
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 1
+      },
+      "id": 37,
+      "options": {
+        "calcs": [
+          "lastNotNull"
+        ],
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 10,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto",
+        "text": {
+          "titleSize": 12,
+          "valueSize": 18
+        },
+        "valueMode": "text",
+        "widthRatio": 0.6
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          },
+          "expr": "avg(avg_over_time(nvidia_smi_temperature_gpu[$__range]))",
+          "instant": true,
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "GPU Temp - Avg",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "homelab-prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "value"
+          },
+          "unit": "decbytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 0,
+        "y": 5
+      },
+      "id": 42,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          },
+          "expr": "node_memory_MemTotal_bytes{instance=\"100.77.191.60:9100\"} - node_memory_MemAvailable_bytes{instance=\"100.77.191.60:9100\"}",
+          "instant": true,
+          "legendFormat": "Used",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          },
+          "expr": "node_memory_MemAvailable_bytes{instance=\"100.77.191.60:9100\"}",
+          "instant": true,
+          "legendFormat": "Free",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          },
+          "expr": "node_memory_MemTotal_bytes{instance=\"100.77.191.60:9100\"}",
+          "instant": true,
+          "legendFormat": "Total",
+          "refId": "C"
+        }
+      ],
+      "title": "RAM (Used / Free / Total)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "homelab-prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "value"
+          },
+          "unit": "decbytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 12,
+        "y": 5
+      },
+      "id": 43,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          },
+          "expr": "node_filesystem_size_bytes{mountpoint=\"/\", instance=\"100.77.191.60:9100\"} - node_filesystem_avail_bytes{mountpoint=\"/\", instance=\"100.77.191.60:9100\"}",
+          "instant": true,
+          "legendFormat": "Used",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          },
+          "expr": "node_filesystem_avail_bytes{mountpoint=\"/\", instance=\"100.77.191.60:9100\"}",
+          "instant": true,
+          "legendFormat": "Free",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "homelab-prometheus"
+          },
+          "expr": "node_filesystem_size_bytes{mountpoint=\"/\", instance=\"100.77.191.60:9100\"}",
+          "instant": true,
+          "legendFormat": "Total",
+          "refId": "C"
+        }
+      ],
+      "title": "Disk / (Used / Free / Total)",
+      "type": "stat"
+    },
+    {
       "gridPos": {
         "h": 7,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 92
       },
       "id": 22,
       "options": {
@@ -41,7 +501,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 7
+        "y": 9
       },
       "id": 28,
       "title": "\ud83d\udda5\ufe0f CPU",
@@ -83,7 +543,7 @@
         "h": 6,
         "w": 6,
         "x": 0,
-        "y": 8
+        "y": 10
       },
       "id": 19,
       "options": {
@@ -155,7 +615,7 @@
         "h": 6,
         "w": 6,
         "x": 6,
-        "y": 8
+        "y": 10
       },
       "id": 10,
       "options": {
@@ -219,7 +679,7 @@
         "h": 6,
         "w": 6,
         "x": 12,
-        "y": 8
+        "y": 10
       },
       "id": 11,
       "options": {
@@ -291,7 +751,7 @@
         "h": 6,
         "w": 6,
         "x": 18,
-        "y": 8
+        "y": 10
       },
       "id": 12,
       "options": {
@@ -392,7 +852,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 14
+        "y": 16
       },
       "id": 4,
       "options": {
@@ -499,7 +959,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 14
+        "y": 16
       },
       "id": 18,
       "options": {
@@ -652,7 +1112,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 22
+        "y": 24
       },
       "id": 1,
       "options": {
@@ -754,7 +1214,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 22
+        "y": 24
       },
       "id": 21,
       "options": {
@@ -882,7 +1342,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 30
+        "y": 32
       },
       "id": 16,
       "options": {
@@ -930,7 +1390,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 38
+        "y": 40
       },
       "id": 29,
       "title": "\ud83c\udfae GPU",
@@ -972,7 +1432,7 @@
         "h": 6,
         "w": 6,
         "x": 0,
-        "y": 39
+        "y": 41
       },
       "id": 20,
       "options": {
@@ -1044,7 +1504,7 @@
         "h": 6,
         "w": 6,
         "x": 6,
-        "y": 39
+        "y": 41
       },
       "id": 13,
       "options": {
@@ -1108,7 +1568,7 @@
         "h": 6,
         "w": 6,
         "x": 12,
-        "y": 39
+        "y": 41
       },
       "id": 14,
       "options": {
@@ -1180,7 +1640,7 @@
         "h": 6,
         "w": 6,
         "x": 18,
-        "y": 39
+        "y": 41
       },
       "id": 15,
       "options": {
@@ -1280,7 +1740,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 45
+        "y": 47
       },
       "id": 5,
       "options": {
@@ -1388,7 +1848,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 45
+        "y": 47
       },
       "id": 6,
       "options": {
@@ -1494,7 +1954,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 53
+        "y": 55
       },
       "id": 27,
       "options": {
@@ -1542,7 +2002,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 61
+        "y": 63
       },
       "id": 30,
       "title": "\ud83d\udcca System & Storage",
@@ -1675,7 +2135,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 62
+        "y": 64
       },
       "id": 2,
       "options": {
@@ -1859,7 +2319,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 62
+        "y": 64
       },
       "id": 3,
       "options": {
@@ -1922,7 +2382,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 70
+        "y": 72
       },
       "id": 31,
       "title": "\ud83d\udc33 Containers",
@@ -1959,7 +2419,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 71
+        "y": 73
       },
       "id": 8,
       "options": {
@@ -2059,7 +2519,7 @@
         "h": 8,
         "w": 16,
         "x": 8,
-        "y": 71
+        "y": 73
       },
       "id": 9,
       "options": {
@@ -2128,7 +2588,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 79
+        "y": 81
       },
       "id": 29,
       "options": {
@@ -2159,6 +2619,18 @@
       ],
       "title": "RAM by Project/Stack",
       "type": "bargauge"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 91
+      },
+      "id": 32,
+      "title": "\ud83d\udcdd Maintenance",
+      "type": "row"
     }
   ]
 }

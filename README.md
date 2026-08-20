@@ -41,7 +41,7 @@ Full details (storage, cooling, existing workload) are in [PRD.md §2](PRD.md#2-
 └───────────────────────────┬──────────────────────────────┘
                              │
                     ┌────────▼────────┐
-                    │     Grafana      │  26 custom panels,
+                    │     Grafana      │  28 custom panels,
                     │      :3033       │  built from scratch
                     └────────┬────────┘
                              │ PromQL
@@ -75,7 +75,7 @@ Full diagram and rationale for each component: [PRD.md §5](PRD.md#5-architectur
 | Phase | Status |
 |---|---|
 | Core metrics (Prometheus, exporters, Grafana) | ✅ Done |
-| Custom dashboard (26 panels, not imported) | ✅ Done |
+| Custom dashboard (28 panels, not imported) | ✅ Done |
 | Production-readiness audit | ✅ Done — 12 alert rules, reliable boot recovery, resource limits verified against real usage, a repeatable query validator |
 | Downsampling / recording rules | ❌ Not started |
 | Alertmanager → Telegram | ✅ Done — 12 alert rules routed and delivered live, validated with a genuine firing alert (not a synthetic test) |
@@ -146,13 +146,14 @@ Access Grafana at `http://<TAILSCALE_IP>:3033` (log in with the credentials from
 
 ## Dashboard
 
-The `Server Overview` dashboard (26 panels, [grafana/dashboards/overview.json](grafana/dashboards/overview.json)) is grouped into a maintenance log plus four row-sections, with CPU and GPU kept fully separate:
+The `Server Overview` dashboard (28 panels, [grafana/dashboards/overview.json](grafana/dashboards/overview.json)) opens on a top **Overview** row of quick gauges (CPU/GPU temp, RAM and disk usage percentages) with the exact numbers underneath (RAM and disk shown as used/free/total in GB), then the detailed sections below. CPU and GPU are kept fully separate:
 
-1. **🛠️ Maintenance Log** — the table above, for context on temperature trends
+1. **📊 Overview** — at-a-glance gauges: CPU temp (avg), GPU temp (avg), RAM usage %, and disk usage %, each paired with the exact number underneath (RAM and disk show used/free/total in GB)
 2. **🖥️ CPU** — Package temp stat cards (Current/Avg/Min/Max), Package vs per-Core temperature (deliberately separated — see technical notes below), CPU usage, Load Average, CPU Fan RPM
 3. **🎮 GPU** — GPU temp stat cards, GPU temperature graph, GPU utilization, GPU Fan RPM
 4. **📊 System & Storage** — RAM and Disk usage, both with absolute GB alongside the percentage
 5. **🐳 Containers** — running container count, top 10 containers by CPU usage, and a per-project RAM breakdown (grouped by the docker-compose project label cAdvisor already exposes — no extra collector needed) sorted descending
+6. **📝 Maintenance Log** — the maintenance history table, pinned at the bottom (below the Containers section) so it stays as context without cluttering the monitoring sections
 
 Every panel was built from scratch; every PromQL query was manually validated against real data — not just "looks like it's working." The bugs found during that validation process are logged in [PRD.md §14](PRD.md#14-incidents--findings-during-development-changelog).
 
@@ -226,7 +227,7 @@ homelab-observability/
 │                                     #   topk/ranking bugs before they ship
 ├── systemd/                         # unit files for the two units above
 └── grafana/
-    ├── dashboards/overview.json     # 26 panels, built from scratch
+    ├── dashboards/overview.json     # 28 panels, built from scratch
     └── provisioning/                # datasource & dashboard auto-provisioning
 ```
 

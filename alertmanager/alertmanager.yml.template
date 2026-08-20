@@ -8,13 +8,23 @@ route:
   group_interval: 5m
   repeat_interval: 4h
   routes:
-    # Anything the container-health / host-resources / self-monitoring groups
-    # mark critical gets a faster repeat so it doesn't sit quiet for 4h if
-    # the first notification gets missed.
+    # Disk critical can be noisy while you're working; for homelab, once/day is enough.
+    - matchers:
+        - alertname="DiskSpaceCritical"
+      receiver: telegram-default
+      repeat_interval: 24h
+
+    # Anything else marked critical gets a faster repeat.
     - matchers:
         - severity="critical"
       receiver: telegram-default
       repeat_interval: 1h
+
+    # Disk warning can be "ongoing" for days; make it much less chatty.
+    - matchers:
+        - alertname="DiskSpaceWarning"
+      receiver: telegram-default
+      repeat_interval: 24h
 
 receivers:
   - name: telegram-default
@@ -37,3 +47,10 @@ inhibit_rules:
       - alertname="DockerStatusExporterStale"
     target_matchers:
       - alertname=~"ContainerCrashLooping|ContainerRestartedRecently"
+
+  # When critical disk is firing, the warning is redundant.
+  - source_matchers:
+      - alertname="DiskSpaceCritical"
+    target_matchers:
+      - alertname="DiskSpaceWarning"
+    equal: ["instance", "mountpoint"]

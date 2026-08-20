@@ -65,7 +65,7 @@ Relevant context for interpreting temperature trends — the baseline shifts aro
 └───────────────────────────┬───────────────────────────────────┘
                              │
                     ┌────────▼────────┐
-                    │     Grafana      │  :3033 (dashboard, 26 custom panels)
+                    │     Grafana      │  :3033 (dashboard, 28 custom panels)
                     │  512M mem limit  │
                     └────────┬────────┘
                              │ queries
@@ -110,7 +110,7 @@ Loki + Promtail (log aggregation)
 | Service | Image | Port (host, Tailscale-only) | Function | Status |
 |---|---|---|---|---|
 | Prometheus | `prom/prometheus:latest` | `9099` | Time-series DB, scraping, alert rule evaluation | ✅ Running |
-| Grafana | `grafana/grafana:latest` | `3033` | Visual dashboard, 26 custom panels | ✅ Running |
+| Grafana | `grafana/grafana:latest` | `3033` | Visual dashboard, 28 custom panels | ✅ Running |
 | node_exporter | `prom/node-exporter:latest` | `9100` | Host metrics: CPU, RAM, disk, network, temperature, fan, load average | ✅ Running |
 | nvidia_gpu_exporter | `utkuozdemir/nvidia_gpu_exporter:latest` | `9835` | Temperature, utilization, memory of the GTX 1050 GPU | ✅ Running (GPU fan speed **not available via this exporter** — the GTX 1050 Mobile doesn't expose that sensor through `nvidia-smi`; GPU fan RPM is tracked separately via `node_exporter`'s hwmon collector instead — see §14 #12) |
 | cAdvisor | `gcr.io/cadvisor/cadvisor:latest` | `8081` (moved from default `8080`, which conflicted with another project's dev stack on the same machine) | Per-container Docker metrics | ✅ Running |
@@ -192,7 +192,7 @@ These alerts have been **validated against real incidents** during development (
 - `alertmanager/alertmanager.yml.template` — committed to git, routing/grouping/inhibition logic, with `__TELEGRAM_BOT_TOKEN__` / `__TELEGRAM_CHAT_ID__` placeholders instead of real secrets
 - `.env` (gitignored) — `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID`, substituted into the template by `sed` in the container's entrypoint at startup (Alertmanager's config format has no built-in `${VAR}` expansion the way `docker-compose.yml` does — see §14 #23)
 
-**Routing:** grouped by `alertname`, `group_wait: 10s`, `repeat_interval: 4h` (1h for `severity="critical"`). An inhibit rule suppresses `ContainerCrashLooping`/`ContainerRestartedRecently` while `DockerStatusExporterStale` is firing, since both would just be reading garbage data from the same root cause.
+**Routing:** grouped by `alertname`, `group_wait: 10s`, `repeat_interval: 4h` (1h for `severity="critical"`), except the disk alerts — `DiskSpaceWarning` and `DiskSpaceCritical` both repeat at most once a day (`repeat_interval: 24h`), so an ongoing full disk doesn't nag while you can't act on it right away. Two inhibit rules: `ContainerCrashLooping`/`ContainerRestartedRecently` are suppressed while `DockerStatusExporterStale` is firing (both would be reading garbage data from the same root cause), and `DiskSpaceWarning` is suppressed while `DiskSpaceCritical` is active (the warning adds nothing once it has already escalated).
 
 **Setup prerequisite:** bot created via @BotFather (`TELEGRAM_BOT_TOKEN`); chat ID obtained by messaging the bot once (`/start`) and reading it back from `https://api.telegram.org/bot<token>/getUpdates` — simpler and more reliable than a third-party "get my chat ID" bot, since it comes straight from the source of truth.
 
@@ -247,7 +247,7 @@ homelab-observability/
 │   └── homelab-observability.service # runs boot-up.sh at boot
 └── grafana/
     ├── dashboards/
-    │   └── overview.json            # 26 custom panels, built from scratch
+    │   └── overview.json            # 28 custom panels, built from scratch
     └── provisioning/
         ├── datasources/             # Prometheus auto-provisioning
         └── dashboards/              # provider config
@@ -264,7 +264,7 @@ Not yet present (Phase 2/4):
 2. **Phase 2 — Downsampling:** ❌ **Not started.** Recording rules for hourly/daily aggregates haven't been created.
 3. **Phase 3 — Alerting:** ✅ **Done.** 12 Prometheus alert rules, live Alertmanager routing to Telegram via its native `telegram_configs` receiver, validated end-to-end with a real firing alert (not a synthetic test) during setup. See §8 and §14 #23-#24 for the two config-substitution bugs found and fixed along the way.
 4. **Phase 4 — Logs:** ❌ **Not started.** Loki + Promtail aren't part of the stack yet.
-5. **Phase 5 — Custom dashboard & polish:** ✅ **Done** (ahead of schedule — worked on in parallel with Phase 1 due to the need for repeated validation). 26 custom panels grouped into a Maintenance Log plus 4 row sections (CPU, GPU, System & Storage, Containers — CPU and GPU deliberately kept in fully separate sections, each with its own temp stats, usage, and fan RPM), every query manually validated against Prometheus, several bugs found & fixed along the way (wrong RPM unit, threshold styling not rendering on the graph, duplicate legend rows from an instance-label change).
+5. **Phase 5 — Custom dashboard & polish:** ✅ **Done** (ahead of schedule — worked on in parallel with Phase 1 due to the need for repeated validation). 28 custom panels: a top **Overview** row of quick gauges (CPU/GPU temp, RAM and disk usage %) with exact numbers underneath (RAM/disk as used/free/total GB), then the detailed sections (CPU, GPU, System & Storage, Containers — CPU and GPU deliberately kept fully separate, each with its own temp stats, usage, and fan RPM), and the Maintenance Log pinned at the very bottom, below the Containers section. Every query manually validated against Prometheus, several bugs found & fixed along the way (wrong RPM unit, threshold styling not rendering on the graph, duplicate legend rows from an instance-label change).
 6. **Phase 6 — Portfolio documentation:** 🟡 **In progress.** This PRD + README.md.
 
 ## 12. Open Items / User Confirmation Needed
