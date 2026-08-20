@@ -1,6 +1,6 @@
 # PRD — Homelab Observability Stack
 
-> **Implementation status:** Phase 1 (core metrics) and Phase 5 (custom dashboard) are complete and validated against real data. Phase 2 (downsampling), Phase 3 (Alertmanager + Telegram — the Prometheus-side alert rules already exist, Telegram integration doesn't), and Phase 4 (logs/Loki) have not been started. Details per phase in §11.
+> **Implementation status:** Phase 1 (core metrics) and Phase 5 (custom dashboard) are complete, validated against real data, and hardened by a dedicated production-readiness audit (12 alert rules, reliable boot recovery, a repeatable query validator — see §14 #13-#20). Phase 2 (downsampling), Phase 3 (Alertmanager + Telegram — the Prometheus-side alert rules already exist, Telegram integration doesn't), and Phase 4 (logs/Loki) have not been started. Details per phase in §11.
 
 ## 1. Summary
 
@@ -141,9 +141,11 @@ The fix: a small script running on the **host** (not inside an observability con
 
 | Resolution | Method | Retention | Status |
 |---|---|---|---|
-| Raw (scrape interval **5 seconds**, finalized after resource testing) | Direct Prometheus scrape | 15 days | ✅ Active |
+| Raw (scrape interval **5 seconds**, finalized after resource testing) | Direct Prometheus scrape | 15 days **or** 5GB, whichever is hit first | ✅ Active |
 | Hourly aggregate (avg/min/max) | Prometheus recording rules | 90 days | ❌ Not built |
 | Daily aggregate (avg/min/max) | Prometheus recording rules | 2 years | ❌ Not built |
+
+The 5GB size cap (`--storage.tsdb.retention.size`) was added during the production-readiness audit as a second, harder bound — see §14 #14. Current actual usage is a small fraction of that (~190MB at time of writing).
 
 **Why 5 seconds (not Prometheus's 15-second default)?** The 6-core/12-thread CPU on this machine has enough headroom for 3x more frequent scraping, and it suits a demo/portfolio context where the dashboard needs to feel "alive" (visibly updating graphs). Trade-off: faster time-series disk growth (~3.5GB per 15-day retention window vs. ~1.2GB at 15-second intervals, based on ~9,000 active series under normal conditions) — still well under available storage, but worth watching since the host disk is already crowded by other workloads.
 
@@ -245,11 +247,11 @@ Not yet present (Phase 2/3/4):
 
 ## 13. Success Criteria
 
-- Stack runs stably 24/7 without disrupting the existing AI workload (overhead <5% CPU, <1GB additional RAM). *(not formally measured long-term yet)*
+- Stack runs stably 24/7 without disrupting the existing AI workload (overhead <5% CPU, <1GB additional RAM). ✅ Measured during the production-readiness audit: all 5 containers combined at ~1.8% of one core (≈0.15% of the host's 12 threads) and ~424MB RAM — well under target. Not yet measured over a multi-week window.
 - Dashboard accessible from another device via Tailscale, showing real-time + historical data. ✅ Validated.
-- Telegram alert successfully delivered when a threshold is breached. ❌ Not yet testable — Alertmanager doesn't exist yet. The underlying Prometheus alert rule itself **has** already been proven against a real incident (see §14).
-- Repo on GitHub: clear README, diagram present, custom dashboard present, no secrets committed.
-- Real historical data (not mocked) available for at least a few days before being used as a portfolio piece.
+- Telegram alert successfully delivered when a threshold is breached. ❌ Not yet testable — Alertmanager doesn't exist yet. The underlying Prometheus alert rules **have** already been proven against real incidents (see §14) — 12 rules total, covering container health, host resources, and self-monitoring.
+- Repo on GitHub: clear README, diagram present, custom dashboard present, no secrets committed. ✅ Validated — public at github.com/rozi-bb/homelab-observability.
+- Real historical data (not mocked) available for at least a few days before being used as a portfolio piece. ✅ Data on hand back to August 19, 2026, with visible gaps from two host reboots — an honest gap (§14 #13) is arguably more useful portfolio material than an unbroken line would have been.
 
 ## 14. Incidents & Findings During Development (Changelog)
 

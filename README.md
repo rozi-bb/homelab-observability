@@ -47,7 +47,7 @@ Full details (storage, cooling, existing workload) are in [PRD.md §2](PRD.md#2-
                              │ PromQL
                     ┌────────▼────────┐
                     │   Prometheus    │  scrape + alert eval
-                    │      :9099      │  every 5s, 15-day retention
+                    │      :9099      │  every 5s, 15d/5GB retention
                     └───────┬─────────┘
               scrape every 5s │
       ┌───────────┬──────────┼───────────┐
@@ -69,9 +69,14 @@ Full diagram and rationale for each component: [PRD.md §5](PRD.md#5-architectur
 |---|---|
 | Core metrics (Prometheus, exporters, Grafana) | ✅ Done |
 | Custom dashboard (25 panels, not imported) | ✅ Done |
+| Production-readiness audit | ✅ Done — 12 alert rules, reliable boot recovery, resource limits verified against real usage, a repeatable query validator |
 | Downsampling / recording rules | ❌ Not started |
 | Alertmanager → Telegram | 🟡 Prometheus-side alert rules are live and have already caught real incidents; Telegram routing not built yet |
 | Logs (Loki + Promtail) | ❌ Not started |
+
+Measured overhead on the host: ~1.8% of one CPU core combined across all 5
+containers (≈0.15% of the host's 12 threads), ~424MB RAM — see
+[PRD.md §13](PRD.md#13-success-criteria).
 
 Full phase breakdown: [PRD.md §11](PRD.md#11-implementation-phases--status).
 
